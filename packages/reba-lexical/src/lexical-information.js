@@ -1,8 +1,10 @@
 class tokenInformation{
+
     constructor(fileName, tokens) {
         this.fileName = fileName;
         this.tokens = tokens;
     }
+    
 }
 module.exports =  class {
     

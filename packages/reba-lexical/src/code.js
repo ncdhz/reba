@@ -10,11 +10,25 @@ module.exports = class {
         this.tokens = [];
         this.code = sourceCode;
         this.codeLength = sourceCode.length;
+
+        this.row = 1;
     }
     /**
-     * 用于把标记符增加1 并返回当前标识符下的字符
+     * 用于替换当前的 codeFirstChar
      */
-    getNowChar() {
+    newCodeFirstChar() {
+        this.codeFirstChar = this.code[this.codeStartLength];
+    }
+    /**
+     * 获取当前标记符下的字符
+     */
+    getNowChar(){
+        return this.code[this.codeStartLength];
+    }
+    /**
+     * 用于把标记符增加1 并返回当前标记符下的字符
+     */
+    getTokenLengthAddOne() {
         this.codeStartLength++;
         return this.code[this.codeStartLength - 1];
     }
@@ -26,10 +40,14 @@ module.exports = class {
             this.codeStartLength++;
         }
     }
+    
+    rowAddOne() {
+        this.row ++;
+    }
     /**
      * 用于添加 token
      */
     setToken(start,end,type,lexeme){
-        this.tokens.push(new token(start, end, type,lexeme));
+        this.tokens.push(new token(start, end, type,lexeme, this.row));
     }
 }

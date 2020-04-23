@@ -2,49 +2,60 @@ const rebaTools = require("reba-tools");
 
 const type = rebaTools.type;
 // 用于操作符号类型
-const operator = type.operator;
+const operator = type.getAllOperator();
 // 用于括号类型
 const brackets = type.brackets;
 // 用于记录关键字
 const jsKey = type.jsKey;
 
+
 module.exports = class {
+
+
 
     constructor(codeInformation) {
         this.codeInformation = codeInformation;
     }
-    // 用于处理空字符
-    empty(){
-        this.codeInformation.getNowChar();
+
+    /**
+     * 用于处理空字符
+     */
+    empty() {
+        if (/\n/.test(this.codeInformation.getNowChar())){
+            this.codeInformation.setToken(this.codeInformation.codeStartLength,
+                this.codeInformation.codeStartLength,type.lineFeed,'\n');
+            this.codeInformation.rowAddOne();
+        }
+        this.codeInformation.getTokenLengthAddOne();
     }
     /**
      * 用于分析以数字开头的字符
      */
-    number(){
+    number() {
         const codeInformation = this.codeInformation;
         /**
          * 用于分析十进制数
          */
-        function number10(){
-            while(/[0-9\.eE]/.test(codeInformation.code[codeInformation.codeStartLength])&&
-                codeInformation.code[codeInformation.codeStartLength]) {
-                if(/[eE]/.test(codeInformation.code[codeInformation.codeStartLength])) {
-                    numberOne += codeInformation.getNowChar();
+        function number10() {
+            while (/[0-9\.eE]/.test(codeInformation.getNowChar()) &&
+                codeInformation.getNowChar()) {
+                if (/[eE]/.test(codeInformation.getNowChar())) {
+                    numberOne += codeInformation.getTokenLengthAddOne();
                 }
-                numberOne += codeInformation.getNowChar();
+                numberOne += codeInformation.getTokenLengthAddOne();
             }
         }
-        function number8And16(){
-            while(/[a-fA-F0-9Xx]/.test(codeInformation.code[codeInformation.codeStartLength])&&
-            codeInformation.code[codeInformation.codeStartLength]) {
-            numberOne += codeInformation.getNowChar();
-        }
+        function number8And16() {
+            while (/[a-fA-F0-9Xx]/.test(codeInformation.getNowChar()) &&
+                codeInformation.getNowChar()) {
+                numberOne += codeInformation.getTokenLengthAddOne();
+            }
         }
         const start = codeInformation.codeStartLength;
-        let numberOne = codeInformation.getNowChar();
-        switch(numberOne) {
+        let numberOne = codeInformation.getTokenLengthAddOne();
+        switch (numberOne) {
             case '0':
-                switch(codeInformation.code[codeInformation.codeStartLength]) {
+                switch (codeInformation.getNowChar()) {
                     case '.':
                         number10();
                         break;
@@ -55,19 +66,19 @@ module.exports = class {
             default:
                 number10();
         }
-        codeInformation.setToken( start, codeInformation.codeStartLength - 1, type.number,numberOne);
+        codeInformation.setToken(start, codeInformation.codeStartLength - 1, type.number, numberOne);
     }
     /**
      * 当词法分析器检测到是用$或_时使用的分析器
      */
     variableAna() {
         const start = this.codeInformation.codeStartLength;
-        let variableName = this.codeInformation.getNowChar();
+        let variableName = this.codeInformation.getTokenLengthAddOne();
         while (this.codeInformation.codeStartLength < this.codeInformation.codeLength &&
-            /[a-zA-Z\$0-9\_]/.test(this.codeInformation.code[this.codeInformation.codeStartLength])) {
-            variableName += this.codeInformation.getNowChar();
+            /[a-zA-Z\$0-9\_]/.test(this.codeInformation.getNowChar())) {
+            variableName += this.codeInformation.getTokenLengthAddOne();
         }
-        this.codeInformation.setToken( start, this.codeInformation.codeStartLength - 1, type.variableName,variableName)
+        this.codeInformation.setToken(start, this.codeInformation.codeStartLength - 1, type.variableName, variableName)
     }
 
     /**
@@ -75,7 +86,7 @@ module.exports = class {
      */
     symbol() {
         const start = this.codeInformation.codeStartLength;
-        let symbolOne = this.codeInformation.getNowChar();
+        let symbolOne = this.codeInformation.getTokenLengthAddOne();
         let symbolType;
 
         this.codeInformation.trimCode();
@@ -83,7 +94,7 @@ module.exports = class {
         switch (symbolOne) {
             case "+":
                 symbolType = operator.add;
-                switch (this.codeInformation.code[this.codeInformation.codeStartLength]) {
+                switch (this.codeInformation.getNowChar()) {
                     case "+":
                         symbolType = operator.addOne;
                         break;
@@ -92,11 +103,11 @@ module.exports = class {
                         break;
                 }
                 if (symbolType !== operator.add)
-                    symbolOne += this.codeInformation.getNowChar();
+                    symbolOne += this.codeInformation.getTokenLengthAddOne();
                 break;
             case "-":
                 symbolType = operator.reduce;
-                switch (this.codeInformation.code[this.codeInformation.codeStartLength]) {
+                switch (this.codeInformation.getNowChar()) {
                     case "-":
                         symbolType = operator.reduceOne;
                         break;
@@ -105,11 +116,11 @@ module.exports = class {
                         break;
                 }
                 if (symbolType !== operator.reduce)
-                    symbolOne += this.codeInformation.getNowChar();
+                    symbolOne += this.codeInformation.getTokenLengthAddOne();
                 break;
             case "*":
                 symbolType = operator.ride;
-                switch (this.codeInformation.code[this.codeInformation.codeStartLength]) {
+                switch (this.codeInformation.getNowChar()) {
                     case "=":
                         symbolType = operator.rideEqual;
                         break;
@@ -118,55 +129,55 @@ module.exports = class {
                         break;
                 }
                 if (symbolType !== operator.ride)
-                    symbolOne += this.codeInformation.getNowChar();
+                    symbolOne += this.codeInformation.getTokenLengthAddOne();
                 break;
             case "/":
                 symbolType = operator.except;
-                switch (this.codeInformation.code[this.codeInformation.codeStartLength]) {
+                switch (this.codeInformation.getNowChar()) {
                     case "=":
                         symbolType = operator.exceptEqual;
-                        symbolOne += this.codeInformation.getNowChar();
+                        symbolOne += this.codeInformation.getTokenLengthAddOne();
                         break;
                 }
                 break;
             case "%":
                 symbolType = operator.remainder;
-                switch (this.codeInformation.code[this.codeInformation.codeStartLength]) {
+                switch (this.codeInformation.getNowChar()) {
                     case "=":
                         symbolType = operator.remainderEqual;
-                        symbolOne += this.codeInformation.getNowChar();
+                        symbolOne += this.codeInformation.getTokenLengthAddOne();
                         break;
                 }
                 break;
             case "=":
                 symbolType = operator.equal;
-                switch (this.codeInformation.code[this.codeInformation.codeStartLength]) {
+                switch (this.codeInformation.getNowChar()) {
                     case "=":
-                        symbolOne += this.codeInformation.getNowChar();
+                        symbolOne += this.codeInformation.getTokenLengthAddOne();
                         symbolType = operator.remainderEqual;
                         this.codeInformation.trimCode();
-                        if (this.codeInformation.code[this.codeInformation.codeStartLength] === "=") {
+                        if (this.codeInformation.getNowChar() === "=") {
                             symbolType = operator.identity;
-                            symbolOne += this.codeInformation.getNowChar();
+                            symbolOne += this.codeInformation.getTokenLengthAddOne();
                         }
                     case ">":
-                        symbolOne += this.codeInformation.getNowChar();
+                        symbolOne += this.codeInformation.getTokenLengthAddOne();
                         symbolType = type.arrowFunction;
                         break;
                 }
                 break;
             case "!":
                 symbolType = operator.logicInverse;
-                switch (this.codeInformation.code[this.codeInformation.codeStartLength]) {
+                switch (this.codeInformation.getNowChar()) {
                     case "=":
-                        symbolOne += this.codeInformation.getNowChar();
+                        symbolOne += this.codeInformation.getTokenLengthAddOne();
                         symbolType = operator.notEqual;
                         this.codeInformation.trimCode();
                         if (this.codeInformation.code[
                             this.codeInformation.codeStartLength
                         ] === "=") {
                             symbolType = operator.notIdentity;
-                            symbolOne += this.codeInformation.getNowChar();
+                            symbolOne += this.codeInformation.getTokenLengthAddOne();
                         }
                         break;
                 }
@@ -174,7 +185,7 @@ module.exports = class {
             case "<":
                 symbolType = operator.less;
                 switch (
-                this.codeInformation.code[this.codeInformation.codeStartLength]
+                this.codeInformation.getNowChar()
                 ) {
                     case "=":
                         symbolType = operator.lessEqual;
@@ -184,26 +195,24 @@ module.exports = class {
                         break;
                 }
                 if (symbolType !== operator.less)
-                    symbolOne += this.codeInformation.getNowChar();
+                    symbolOne += this.codeInformation.getTokenLengthAddOne();
                 break;
             case ">":
                 symbolType = operator.greater;
-                switch (
-                this.codeInformation.code[this.codeInformation.codeStartLength]
-                ) {
+                switch (this.codeInformation.getNowChar()) {
                     case "=":
                         symbolType = operator.greaterEqual;
-                        symbolOne += this.codeInformation.getNowChar();
+                        symbolOne += this.codeInformation.getTokenLengthAddOne();
                         break;
                     case ">":
                         symbolType = operator.signedRightShift;
-                        symbolOne += this.codeInformation.getNowChar();
+                        symbolOne += this.codeInformation.getTokenLengthAddOne();
                         this.codeInformation.trimCode();
                         if (this.codeInformation.code[
                             this.codeInformation.codeStartLength
                         ] === ">") {
                             symbolType = operator.rightShift;
-                            symbolOne += this.codeInformation.getNowChar();
+                            symbolOne += this.codeInformation.getTokenLengthAddOne();
                         }
                         break;
                 }
@@ -215,26 +224,34 @@ module.exports = class {
                 break;
             case ".":
                 symbolType = operator.spot;
+                // 用于判断展开运算符
+                if (type.isType(this.codeInformation.getNowChar(), '.')) {
+                    if (type.isType(this.codeInformation.code[this.codeInformation.codeStartLength + 1],'.')) {
+                        symbolOne += this.codeInformation.getTokenLengthAddOne()
+                         + this.codeInformation.getTokenLengthAddOne();
+                         symbolType = type.spread;
+                    }
+                }
                 break;
             case "&":
                 symbolType = operator.add;
-                switch (this.codeInformation.code[this.codeInformation.codeStartLength]) {
+                switch (this.codeInformation.getNowChar()) {
                     case "&":
                         symbolType = operator.logicAnd;
                         break;
                 }
                 if (symbolType !== operator.add)
-                    symbolOne += this.codeInformation.getNowChar();
+                    symbolOne += this.codeInformation.getTokenLengthAddOne();
                 break;
             case "|":
                 symbolType = operator.or;
-                switch (this.codeInformation.code[this.codeInformation.codeStartLength]) {
+                switch (this.codeInformation.getNowChar()) {
                     case "|":
                         symbolType = operator.logicOr;
                         break;
                 }
                 if (symbolType !== operator.or)
-                    symbolOne += this.codeInformation.getNowChar();
+                    symbolOne += this.codeInformation.getTokenLengthAddOne();
                 break;
             case "~":
                 symbolType = operator.inverse;
@@ -267,8 +284,8 @@ module.exports = class {
                 symbolType = brackets.parentheses.rightParentheses;
                 break;
         }
-        this.codeInformation.setToken( start, this.codeInformation.codeStartLength - 1, symbolType,symbolOne);
-        
+        this.codeInformation.setToken(start, this.codeInformation.codeStartLength - 1, symbolType, symbolOne);
+
     }
 
     /**
@@ -279,26 +296,29 @@ module.exports = class {
         let notesOne = this.codeInformation.codeFirstChar;
         let notesType = "";
         this.codeInformation.codeStartLength++;
-        switch (this.codeInformation.code[this.codeInformation.codeStartLength]) {
+        switch (this.codeInformation.getNowChar()) {
             case "/":
                 notesType = type.singleLineComment;
-                while (this.codeInformation.code[this.codeInformation.codeStartLength] &&
-                    this.codeInformation.code[this.codeInformation.codeStartLength] !== "\n") {
-                    notesOne += this.codeInformation.getNowChar();
+                while (this.codeInformation.getNowChar() &&
+                    this.codeInformation.getNowChar() !== "\n") {
+                    notesOne += this.codeInformation.getTokenLengthAddOne();
                 }
                 break;
             case "*":
                 notesType = type.multilineComment;
-                notesOne += this.codeInformation.getNowChar();
-                while (this.codeInformation.code[this.codeInformation.codeStartLength] !== "/"
+                notesOne += this.codeInformation.getTokenLengthAddOne();
+                while (this.codeInformation.getNowChar() !== "/"
                     || this.codeInformation.code[this.codeInformation.codeStartLength - 1] !== "*") {
-                    notesOne += this.codeInformation.getNowChar();
+                    //当出现换行是换行符加一
+                    if (this.codeInformation.getNowChar() === '\n')
+                        this.codeInformation.rowAddOne();
+                    notesOne += this.codeInformation.getTokenLengthAddOne();
                 }
-                notesOne += this.codeInformation.getNowChar();
+                notesOne += this.codeInformation.getTokenLengthAddOne();
                 break;
         }
 
-        this.codeInformation.setToken( start, this.codeInformation.codeStartLength - 1, notesType,notesOne);
+        this.codeInformation.setToken(start, this.codeInformation.codeStartLength - 1, notesType, notesOne);
     }
     /**
      * 用于处理字符串
@@ -311,17 +331,17 @@ module.exports = class {
         const codeInformation = this.codeInformation;
 
         function characterStringTool(char) {
-            while (codeInformation.code[codeInformation.codeStartLength] &&
-                codeInformation.code[codeInformation.codeStartLength] !== char) {
-                if (codeInformation.code[codeInformation.codeStartLength] === "\\") {
-                    stringOne += codeInformation.getNowChar();
+            while (codeInformation.getNowChar() &&
+                codeInformation.getNowChar() !== char) {
+                if (codeInformation.getNowChar() === "\\") {
+                    stringOne += codeInformation.getTokenLengthAddOne();
                 }
-                stringOne += codeInformation.getNowChar();
+                stringOne += codeInformation.getTokenLengthAddOne();
             }
         }
 
         const start = codeInformation.codeStartLength;
-        let stringOne = codeInformation.getNowChar();
+        let stringOne = codeInformation.getTokenLengthAddOne();
         switch (stringOne) {
             case "'":
                 characterStringTool("'");
@@ -331,10 +351,10 @@ module.exports = class {
                 break;
         }
 
-        if (codeInformation.code[codeInformation.codeStartLength])
-            stringOne += codeInformation.getNowChar();
+        if (codeInformation.getNowChar())
+            stringOne += codeInformation.getTokenLengthAddOne();
 
-        codeInformation.setToken( start, codeInformation.codeStartLength - 1, type.characterString,stringOne);
+        codeInformation.setToken(start, codeInformation.codeStartLength - 1, type.characterString, stringOne);
     }
     /**
      * 用于处理正则表达式
@@ -342,13 +362,13 @@ module.exports = class {
     regular() {
         const start = this.codeInformation.codeStartLength;
 
-        let regularOne = this.codeInformation.getNowChar();
+        let regularOne = this.codeInformation.getTokenLengthAddOne();
 
         // 用于标记 /[/]/ 这种情况的发生
         let sign = false;
-        while (this.codeInformation.code[this.codeInformation.codeStartLength] &&
-            (this.codeInformation.code[this.codeInformation.codeStartLength] !== "/" || sign )) {
-            const char = this.codeInformation.code[this.codeInformation.codeStartLength];
+        while (this.codeInformation.getNowChar() &&
+            (this.codeInformation.getNowChar() !== "/" || sign)) {
+            const char = this.codeInformation.getNowChar();
             if (char === "[") {
                 sign = true;
             }
@@ -356,27 +376,27 @@ module.exports = class {
                 sign = false;
             }
             if (char === "\\") {
-                regularOne += this.codeInformation.getNowChar();
+                regularOne += this.codeInformation.getTokenLengthAddOne();
             }
 
-            regularOne += this.codeInformation.getNowChar();
+            regularOne += this.codeInformation.getTokenLengthAddOne();
         }
-        regularOne += this.codeInformation.getNowChar();
-        this.codeInformation.setToken(start,this.codeInformation.codeStartLength - 1,type.regular,regularOne);
+        regularOne += this.codeInformation.getTokenLengthAddOne();
+        this.codeInformation.setToken(start, this.codeInformation.codeStartLength - 1, type.regular, regularOne);
     }
     /**
      * 用于处理特殊符号信息
      */
     specialSymbol() {
-        switch (this.codeInformation.code[this.codeInformation.codeStartLength]) {
+        switch (this.codeInformation.getNowChar()) {
             case "'":
             case '"':
                 this.characterString();
                 return;
             case '.':
-                if(/[0-9]/.test(this.codeInformation.code[this.codeInformation.codeStartLength+1])) {
+                if (/[0-9]/.test(this.codeInformation.code[this.codeInformation.codeStartLength + 1])) {
                     this.number();
-                }else {
+                } else {
                     this.symbol();
                 }
                 return;
@@ -392,8 +412,8 @@ module.exports = class {
                     this.codeInformation.code[signLength] === " ")
                     signLength--;
                 let char = this.codeInformation.code[signLength];
-                if (/[;\n\(=\+\-\*|&^]/.test(char) || !char || 
-                jsKey[this.codeInformation.tokens[this.codeInformation.tokens.length - 1].type]) {
+                if (/[;\n\(=\+\-\*|&^]/.test(char) || !char ||
+                    jsKey[this.codeInformation.tokens[this.codeInformation.tokens.length - 1].type]) {
                     this.regular();
                 }
                 else this.symbol();
@@ -404,13 +424,13 @@ module.exports = class {
      */
     character() {
         const start = this.codeInformation.codeStartLength;
-        let stringOne = this.codeInformation.getNowChar();
-        while (this.codeInformation.code[this.codeInformation.codeStartLength] &&
-            /[a-zA-Z1-9\_\$]/.test(this.codeInformation.code[this.codeInformation.codeStartLength])) {
-            stringOne += this.codeInformation.getNowChar();
+        let stringOne = this.codeInformation.getTokenLengthAddOne();
+        while (this.codeInformation.getNowChar() &&
+            /[a-zA-Z1-9\_\$]/.test(this.codeInformation.getNowChar())) {
+            stringOne += this.codeInformation.getTokenLengthAddOne();
         }
         let stringType = jsKey[stringOne];
         if (!stringType) stringType = type.variableName;
-        this.codeInformation.setToken(start,this.codeInformation.codeStartLength - 1,stringType,stringOne);
+        this.codeInformation.setToken(start, this.codeInformation.codeStartLength - 1, stringType, stringOne);
     }
 };

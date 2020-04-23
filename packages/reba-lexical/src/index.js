@@ -5,6 +5,7 @@ const fs = require('fs');
 const rebaTools = require('reba-tools');
 
 module.exports = function (information,conf) {
+    
     const lexicalInf = new lexicalInformation(false);
     /**
      * 通过文件夹名字遍历文件找到js类型文件生成token

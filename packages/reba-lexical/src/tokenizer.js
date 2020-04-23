@@ -10,10 +10,10 @@ function getTokens(sourceCode) {
     // 构建一个词法分析器类
     const ana = new analysis(codeInformation);
     
-    while (codeInformation.codeFirstChar) {
+    while (codeInformation.getNowChar()) {
         // 词法分析选择器
         // 通过首元素找到对应的分析器并交给分析器
-        const startChar = codeInformation.codeFirstChar;
+        const startChar = codeInformation.getNowChar();
         
         switch (true) {
             case /[0-9]/.test(startChar):
@@ -39,7 +39,7 @@ function getTokens(sourceCode) {
                 ana.empty();                
         }
         
-        codeInformation.codeFirstChar = codeInformation.code[codeInformation.codeStartLength];
+        codeInformation.newCodeFirstChar();
     }
     return codeInformation.tokens;
 }
