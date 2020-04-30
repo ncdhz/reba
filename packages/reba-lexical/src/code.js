@@ -10,9 +10,9 @@ module.exports = class {
         this.tokens = [];
         this.code = sourceCode;
         this.codeLength = sourceCode.length;
-
         this.row = 1;
     }
+    
     /**
      * 用于替换当前的 codeFirstChar
      */

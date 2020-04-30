@@ -1,3 +1,5 @@
+const selector = require("./selector");
+
 module.exports = {
     /**
      * 判断 type1 是否等于 type2
@@ -12,7 +14,7 @@ module.exports = {
      * @param {类型} type 
      * @param {父类} parent 
      */
-    isParent (type,parent){
+    isParent (type, parent){
         return parent[type] ? true: false;
     },
     /**
@@ -22,7 +24,7 @@ module.exports = {
      */
     isAncestor(type, ancestor) {
         let is = this.isParent(type, ancestor);
-        if(! is) {
+        if(!is) {
             for (const key in ancestor) {
                 if (ancestor.hasOwnProperty(key)) {
                     const element = ancestor[key];
@@ -79,7 +81,7 @@ module.exports = {
      * 逻辑运算符
      * @param {类型} type 
      */
-    isLogicalOperator: function (type) {
+    isLogicalOperator(type) {
         return this.isParent(type, this.operator.logicalOperator);
     },
     /**
@@ -105,6 +107,91 @@ module.exports = {
             Object.assign(operator, this.operator[operatorParent]);
         }
         return operator;
+    },
+    /**
+     * 返回类型的权限
+     * @param {类型} type 
+     */
+    getPriority(type){
+        const select = new selector(this);
+        return select.push([
+            this.brackets.parentheses.leftParentheses,
+            this.brackets.parentheses.rightParentheses,
+        ],() =>  18).push([
+            this.operator.memberOperator.spot,
+            this.brackets.middlebrackets.leftMiddlebrackets,
+            this.brackets.middlebrackets.rightMiddlebrackets,
+            this.operator.memberOperator.optionalChaining,
+            this.jsKey.new
+        ],() => 17).push([
+            this.operator.updateOperator.addOne,
+            this.operator.updateOperator.reduceOne,
+            this.jsKey.delete,
+            this.jsKey.await,
+            this.jsKey.new,
+            this.jsKey.typeof,
+            this.jsKey.void,
+            this.operator.unaryOperator.logicInverse,
+            this.operator.unaryOperator.inverse
+        ],() => 16).push([
+            this.operator.binaryOperator.involution
+        ]).push([
+            this.operator.binaryOperator.ride,
+            this.operator.binaryOperator.except,
+            this.operator.binaryOperator.remainder
+        ],()=> 15).push([
+            this.operator.binaryOperator.and,
+            this.operator.binaryOperator.reduce
+        ], () => 14).push([
+            this.operator.binaryOperator.leftShift,
+            this.operator.binaryOperator.rightShift,
+            this.operator.binaryOperator.signedRightShift
+        ], () => 13).push([
+            this.jsKey.instanceof,
+            this.jsKey.in,
+            this.operator.binaryOperator.less,
+            this.operator.binaryOperator.lessEqual,
+            this.operator.binaryOperator.greater,
+            this.operator.binaryOperator.greaterEqual,
+        ], () => 12).push([
+            this.operator.binaryOperator.equalEqual,
+            this.operator.binaryOperator.identity,
+            this.operator.binaryOperator.notEqual,
+            this.operator.binaryOperator.notIdentity
+        ], () => 11).push([
+            this.operator.binaryOperator.add
+        ], () => 10).push([
+            this.operator.binaryOperator.xor
+        ], () => 9).push([
+            this.operator.binaryOperator.or
+        ], () => 8).push([
+            this.operator.logicalOperator.logicAnd
+        ], () => 7).push([
+            this.operator.logicalOperator.logicOr
+        ], () => 6).push([
+            this.operator.conditionalOperator.questionMark,
+            this.operator.conditionalOperator.colon
+        ], () => 5).push([
+            this.operator.assignmentOperator.equal,
+            this.operator.assignmentOperator.addEqual,
+            this.operator.assignmentOperator.reduceEqual,
+            this.operator.assignmentOperator.exceptEqual,
+            this.operator.assignmentOperator.rideEqual,
+            this.operator.assignmentOperator.remainderEqual,
+            this.operator.assignmentOperator.rightShiftEqual,
+            this.operator.assignmentOperator.signedRightShiftEqual,
+            this.operator.assignmentOperator.leftShiftEqual,
+            this.operator.assignmentOperator.andEqual,
+            this.operator.assignmentOperator.orEqual,
+            this.operator.assignmentOperator.xorEqual
+        ], () => 4).push([
+            this.jsKey.yield,
+            this.jsKey["yield*"]
+        ], () => 3).push([
+            this.spread
+        ], () => 2).push([
+            this.operator.sequenceOperator.comma
+        ], () => 1).run(type);
     },
     lineFeed:"lineFeed",
     // 数字类型
@@ -183,14 +270,30 @@ module.exports = {
             rideEqual: "rideEqual",
             // %=
             remainderEqual: "remainderEqual",
+            // >>>=
+            rightShiftEqual: "rightShiftEqual",
+            // >>=
+            signedRightShiftEqual: "signedRightShiftEqual",
+            // <<=
+            leftShiftEqual: "leftShiftEqual",
+            // &=
+            andEqual:"andEqual",
+            // |=
+            orEqual:"orEqual",
+            // ^=
+            xorEqual:"xorEqual"
         },
         conditionalOperator:{
-            // ? 或 :
-            ternaryOperator: "ternaryOperator",
+            // ? 
+            questionMark: "questionMark",
+            // :
+            colon:"colon"
         },
         memberOperator:{
             // .
             spot: "spot",
+            // ?.
+            optionalChaining:"optionalChaining"
         },
         unaryOperator:{
             // !
@@ -265,6 +368,7 @@ module.exports = {
         float: "float",
         for: "for",
         function: "function",
+        "function*": "function*",
         goto: "goto",
         if: "if",
         implements: "implements",
@@ -300,6 +404,8 @@ module.exports = {
         volatile: "volatile",
         while: "while",
         with: "with",
-        yield: "yield"
+        yield: "yield",
+        "yield*": "yield*",
+        await:"await"
     }
 }

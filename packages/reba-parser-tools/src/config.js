@@ -23,5 +23,23 @@ module.exports = {
     // 块语句
     BlockStatement:"BlockStatement",
     // 展开
-    RestElement:"RestElement"
+    RestElement:"RestElement",
+    // 赋值表达式
+    AssignmentExpression:"AssignmentExpression",
+    // 箭头函数
+    ArrowFunctionExpression:"ArrowFunctionExpression",
+    // 对象表达式
+    ObjectExpression:"ObjectExpression",
+    // 对象里面的属性
+    Property:"Property",
+    // 数组
+    ArrayExpression:"ArrayExpression",
+    // 调用函数
+    CallExpression:"CallExpression",
+    // 成员表达式
+    MemberExpression:"MemberExpression",
+    // 分配模式 也就是给默认值
+    AssignmentPattern:"AssignmentPattern",
+    // this 表达式
+    ThisExpression:"ThisExpression"
 }

@@ -1,4 +1,4 @@
-const ast = require("./ast-object");
+const parserAst = require("reba-parser-tools");
 const type = require("reba-tools").type;
 module.exports = class {
     
@@ -12,7 +12,7 @@ module.exports = class {
         // 用于存储当前遍历到了那个token
         this.startLength = 0;
         // 用于存储所有的ast树
-        this.ast = new ast.Program(sourceType);
+        this.ast = new parserAst.Program(sourceType);
         // 用于存储注解
         this.notes = [];
         // 用于保存tokens的长度
@@ -40,25 +40,17 @@ module.exports = class {
         }
     }
     /**
+     * 如果当前token  type是 ; token向前平移 
+     */
+    ifSemicolonlengthAddOne(){
+        if (this.isType(type.semicolon)) this.lengthAddOne();
+    }
+    /**
      * 用于存储注解
      */
     notesStorage(){
         // 把当前token中的词素存储到 notes 中
         this.notes.push(this.getNowTokenLexeme());
-    }
-    /**
-    * 获取标识符对象
-    * @param {标识符name} name 
-    */
-    getIdentifier(name) {
-        return new astObj.Identifier(name);
-    }
-    /**
-     * 返回一个ast
-     */
-    newAST(type){
-
-        return new astObj.AST(type);
     }
     /**
      * 当前 token类型 是否与 type 相同
@@ -79,41 +71,96 @@ module.exports = class {
      */
     getNowTokenType(){
         return this.tokenLength >  this.startLength?
-         this.tokens[this.startLength].type : undefined;
+         this.getNowToken().type : undefined;
     }
     /**
      * 获取当前 token 在源文件处于哪一行
      */
     getNowTokenRow() {
         return this.tokenLength > this.startLength
-            ? this.tokens[this.startLength].position.row : undefined;
+            ? this.getNowToken().position.row : undefined;
     }
     /**
      * 获取当前Token的词素
      */
     getNowTokenLexeme(){
         return this.tokenLength > this.startLength 
-        ? this.tokens[this.startLength].lexeme : undefined;
+        ? this.getNowToken().lexeme : undefined;
+    }
+    /**
+    * 获取当前 startLength 下的 token
+    */
+    getNowToken() {
+        return this.tokenLength > this.startLength ? this.tokens[this.startLength] : undefined;
+    }
+    /**
+     * 获取前面一个 token 的 type
+     * 判断到 \n 跳过
+     */
+    getFrontTokenType() {
+        return this.getFrontToken()
+            ? this.getFrontToken().type : undefined;
     }
     /**
      * 获取前面一个 token 的词素
+     * 判断到 \n 跳过
      */
-    getAheadTokenLexeme(){
-        return this.tokenLength > this.startLength - 1
-            ? this.tokens[this.startLength - 1].lexeme : undefined;
+    getFrontTokenLexeme(){
+        return this.getFrontToken()
+        ? this.getFrontToken().lexeme : undefined;
     }
+    
     /**
      * 获取前面一个 token 的行
+     * 判断到 \n 跳过
      */
-    getAheadTokenRow() {
-        return this.tokenLength  > this.startLength - 1
-            ? this.tokens[this.startLength - 1].position.row : undefined;
+    getFrontTokenRow() {
+        return this.getFrontToken()
+            ? this.getFrontToken().position.row : undefined;
     }
     /**
-     * 获取当前 startLength 下的 token
+     * 获取前面一个 token
+     * 判断到 \n 跳过
      */
-    getNowToken(){
-        return this.tokens[this.startLength];
+    getFrontToken(){
+        let i = 1;
+        for ( ;this.tokens[this.startLength - i]
+            && type.isType(this.tokens[this.startLength - i].type,type.lineFeed); i++);
+        return this.tokens[this.startLength - i];
+    }
+    /**
+     * 获取后面一个 token 的词素
+     * 判断到 \n 跳过
+     */
+    getBehindTokenLexeme() {
+        return this.getBehindToken()
+            ? this.getBehindToken().lexeme : undefined;
+    }
+
+    /**
+     * 获取后面一个 token 的行
+     * 判断到 \n 跳过
+     */
+    getBehindTokenRow() {
+        return this.getBehindToken()
+            ? this.getBehindToken().position.row : undefined;
+    }
+    /**
+     * 获取后面一个 token 的type
+     * 判断到 \n 跳过
+     */
+    getBehindTokenType() {
+        return this.getBehindToken()
+            ? this.getBehindToken().type : undefined;
+    }
+    /**
+     * 获取后一个元素的Token
+     */
+    getBehindToken() {
+        let i = 1;
+        for (; this.tokens[this.startLength + i]
+            && type.isType(this.tokens[this.startLength + i].type, type.lineFeed); i++);
+        return this.tokens[this.startLength + i];
     }
     /**
      * 初始当前token
@@ -129,11 +176,4 @@ module.exports = class {
         return this.getNowToken();
     }
 
-    /**
-     * 用于在语法树中添加注解
-     * @param {语法树} ast 
-     */
-    setComments(ast) {
-        ast.comments = this.notes;
-    }
 }

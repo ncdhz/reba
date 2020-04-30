@@ -11,12 +11,9 @@ const jsKey = type.jsKey;
 
 module.exports = class {
 
-
-
     constructor(codeInformation) {
         this.codeInformation = codeInformation;
     }
-
     /**
      * 用于处理空字符
      */
@@ -79,6 +76,7 @@ module.exports = class {
             variableName += this.codeInformation.getTokenLengthAddOne();
         }
         this.codeInformation.setToken(start, this.codeInformation.codeStartLength - 1, type.variableName, variableName)
+    
     }
 
     /**
@@ -184,18 +182,21 @@ module.exports = class {
                 break;
             case "<":
                 symbolType = operator.less;
-                switch (
-                this.codeInformation.getNowChar()
-                ) {
+                switch (this.codeInformation.getNowChar()) {
                     case "=":
+                        symbolOne += this.codeInformation.getTokenLengthAddOne();
                         symbolType = operator.lessEqual;
                         break;
                     case "<":
                         symbolType = operator.leftShift;
+                        symbolOne += this.codeInformation.getTokenLengthAddOne();
+                        this.codeInformation.trimCode();
+                        if (this.codeInformation.getNowChar() === "=") {
+                            symbolType = operator.leftShiftEqual;
+                            symbolOne += this.codeInformation.getTokenLengthAddOne();
+                        }
                         break;
                 }
-                if (symbolType !== operator.less)
-                    symbolOne += this.codeInformation.getTokenLengthAddOne();
                 break;
             case ">":
                 symbolType = operator.greater;
@@ -208,10 +209,17 @@ module.exports = class {
                         symbolType = operator.signedRightShift;
                         symbolOne += this.codeInformation.getTokenLengthAddOne();
                         this.codeInformation.trimCode();
-                        if (this.codeInformation.code[
-                            this.codeInformation.codeStartLength
-                        ] === ">") {
+                        if (this.codeInformation.getNowChar() === ">") {
                             symbolType = operator.rightShift;
+                            symbolOne += this.codeInformation.getTokenLengthAddOne();
+                            this.codeInformation.trimCode();
+                            if (this.codeInformation.getNowChar() === "=") {
+                                symbolType = operator.rightShiftEqual;
+                                symbolOne += this.codeInformation.getTokenLengthAddOne();
+                            }
+                        }
+                        if (this.codeInformation.getNowChar() === "=") {
+                            symbolType = operator.signedRightShiftEqual;
                             symbolOne += this.codeInformation.getTokenLengthAddOne();
                         }
                         break;
@@ -219,8 +227,14 @@ module.exports = class {
 
                 break;
             case "?":
+                symbolType = operator.questionMark;
+                if(this.codeInformation.getNowChar() === ".") {
+                    symbolType = operator.optionalChaining;
+                    symbolOne += this.codeInformation.getTokenLengthAddOne();
+                }
+                break;
             case ":":
-                symbolType = operator.ternaryOperator;
+                symbolType = operator.colon;
                 break;
             case ".":
                 symbolType = operator.spot;
@@ -239,6 +253,9 @@ module.exports = class {
                     case "&":
                         symbolType = operator.logicAnd;
                         break;
+                    case "=":
+                        symbolType = operator.andEqual;
+                        break;
                 }
                 if (symbolType !== operator.add)
                     symbolOne += this.codeInformation.getTokenLengthAddOne();
@@ -249,6 +266,9 @@ module.exports = class {
                     case "|":
                         symbolType = operator.logicOr;
                         break;
+                    case "=":
+                        symbolType = operator.orEqual;
+                        break;
                 }
                 if (symbolType !== operator.or)
                     symbolOne += this.codeInformation.getTokenLengthAddOne();
@@ -258,6 +278,10 @@ module.exports = class {
                 break;
             case "^":
                 symbolType = operator.xor;
+                if(this.codeInformation.getNowChar() === "=") {
+                    symbolType = operator.xorEqual;
+                    symbolOne += this.codeInformation.getTokenLengthAddOne();
+                }
                 break;
             case ",":
                 symbolType = operator.comma;
@@ -431,6 +455,18 @@ module.exports = class {
         }
         let stringType = jsKey[stringOne];
         if (!stringType) stringType = type.variableName;
+        this.codeInformation.trimCode();
+        if (this.codeInformation.getNowChar() === "*") {
+            if (type.isType(stringType, jsKey.function)) {
+                stringType = jsKey["function*"];
+                this.codeInformation.getTokenLengthAddOne();
+            }
+            if (type.isType(stringType, jsKey.yield)) {
+                stringType = jsKey["yield*"];
+                this.codeInformation.getTokenLengthAddOne();
+            }
+        }
+        
         this.codeInformation.setToken(start, this.codeInformation.codeStartLength - 1, stringType, stringOne);
     }
 };
