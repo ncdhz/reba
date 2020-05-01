@@ -87,7 +87,6 @@ module.exports = class {
         let symbolOne = this.codeInformation.getTokenLengthAddOne();
         let symbolType;
 
-        this.codeInformation.trimCode();
 
         switch (symbolOne) {
             case "+":
@@ -152,12 +151,12 @@ module.exports = class {
                 switch (this.codeInformation.getNowChar()) {
                     case "=":
                         symbolOne += this.codeInformation.getTokenLengthAddOne();
-                        symbolType = operator.remainderEqual;
-                        this.codeInformation.trimCode();
+                        symbolType = operator.equalEqual;
                         if (this.codeInformation.getNowChar() === "=") {
                             symbolType = operator.identity;
                             symbolOne += this.codeInformation.getTokenLengthAddOne();
                         }
+                        break;
                     case ">":
                         symbolOne += this.codeInformation.getTokenLengthAddOne();
                         symbolType = type.arrowFunction;
@@ -170,7 +169,6 @@ module.exports = class {
                     case "=":
                         symbolOne += this.codeInformation.getTokenLengthAddOne();
                         symbolType = operator.notEqual;
-                        this.codeInformation.trimCode();
                         if (this.codeInformation.code[
                             this.codeInformation.codeStartLength
                         ] === "=") {
@@ -190,7 +188,6 @@ module.exports = class {
                     case "<":
                         symbolType = operator.leftShift;
                         symbolOne += this.codeInformation.getTokenLengthAddOne();
-                        this.codeInformation.trimCode();
                         if (this.codeInformation.getNowChar() === "=") {
                             symbolType = operator.leftShiftEqual;
                             symbolOne += this.codeInformation.getTokenLengthAddOne();
@@ -208,11 +205,9 @@ module.exports = class {
                     case ">":
                         symbolType = operator.signedRightShift;
                         symbolOne += this.codeInformation.getTokenLengthAddOne();
-                        this.codeInformation.trimCode();
                         if (this.codeInformation.getNowChar() === ">") {
                             symbolType = operator.rightShift;
                             symbolOne += this.codeInformation.getTokenLengthAddOne();
-                            this.codeInformation.trimCode();
                             if (this.codeInformation.getNowChar() === "=") {
                                 symbolType = operator.rightShiftEqual;
                                 symbolOne += this.codeInformation.getTokenLengthAddOne();
@@ -455,7 +450,6 @@ module.exports = class {
         }
         let stringType = jsKey[stringOne];
         if (!stringType) stringType = type.variableName;
-        this.codeInformation.trimCode();
         if (this.codeInformation.getNowChar() === "*") {
             if (type.isType(stringType, jsKey.function)) {
                 stringType = jsKey["function*"];

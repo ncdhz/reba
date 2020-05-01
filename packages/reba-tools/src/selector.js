@@ -5,12 +5,12 @@ module.exports = class {
         this.operation = operation;
         this.data = {};
     }
-    pushBefore(after){
-        this.after = after;
+    pushBefore(before){
+        this.before = before;
         return this;
     }
-    pushAfter(before){
-        this.before = before;
+    pushAfter(after){
+        this.after = after;
         return this;
     }
     /**
@@ -176,8 +176,20 @@ module.exports = class {
         }
         // 运行后必须运行
         if(this.hasOwnProperty("after")) {
-            funArr(this["after"], null);
+
+            const after = this["after"];
+            let param = params[paramLen];
+
+            if (typeof after === "function") {
+                if (param instanceof Array) {
+                    param.push(returnData);
+                } else{
+                    param = [returnData];
+                }
+                after.apply(null, param);
+            }
         }
+
         return returnData.length === 1 ? 
         returnData[0]:returnData.length === 0 
         ? undefined : returnData;

@@ -5,6 +5,6 @@ module.exports = class MemberExpression {
     constructor(property, object) {
         this.object = object;
         this.type = config.MemberExpression;
-        this.property = new Identifier(property);
+        this.property = property;
     }
 }

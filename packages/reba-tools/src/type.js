@@ -4,9 +4,17 @@ module.exports = {
     /**
      * 判断 type1 是否等于 type2
      * @param {类型一} type1 
-     * @param {类型二} type2 
+     * @param {类型二 可以是数组} type2 
      */
     isType(type1,type2){
+        if(type2 instanceof Array) {
+            for (let index = 0; index < type2.length; index++) {
+                if(type1 === type2[index]) {
+                    return true;
+                }                
+            }
+            return false;
+        }
         return type1 === type2;
     },
     /**
@@ -140,7 +148,7 @@ module.exports = {
             this.operator.binaryOperator.except,
             this.operator.binaryOperator.remainder
         ],()=> 15).push([
-            this.operator.binaryOperator.and,
+            this.operator.binaryOperator.add,
             this.operator.binaryOperator.reduce
         ], () => 14).push([
             this.operator.binaryOperator.leftShift,
@@ -159,7 +167,7 @@ module.exports = {
             this.operator.binaryOperator.notEqual,
             this.operator.binaryOperator.notIdentity
         ], () => 11).push([
-            this.operator.binaryOperator.add
+            this.operator.binaryOperator.and
         ], () => 10).push([
             this.operator.binaryOperator.xor
         ], () => 9).push([

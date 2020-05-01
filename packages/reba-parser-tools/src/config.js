@@ -41,5 +41,11 @@ module.exports = {
     // 分配模式 也就是给默认值
     AssignmentPattern:"AssignmentPattern",
     // this 表达式
-    ThisExpression:"ThisExpression"
+    ThisExpression:"ThisExpression",
+    // 一元表达式
+    UnaryExpression:"UnaryExpression",
+    // 更新表达式
+    UpdateExpression:"UpdateExpression",
+    // 序列表达式
+    SequenceExpression:"SequenceExpression"
 }

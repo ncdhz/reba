@@ -5,6 +5,8 @@ const rebaTools = require("reba-tools");
 const selector = rebaTools.selector;
 
 const type = rebaTools.type;
+const operator = type.operator;
+
 const brackets = type.brackets;
 const jsKey = type.jsKey;
 
@@ -15,17 +17,18 @@ function getAST(tokenFile, sourceType) {
     const astBody = astI.ast.body;
     const ana = new analysis(astI);
     const select = new selector(ana);
-    // select.push([
-    //     jsKey.const,
-    //     jsKey.var,
-    //     jsKey.let
-    // ], "variableKeyAna").
-    // push(jsKey.function, "functionAna").
-    // push(type.variableName, "rootNode").
-    // pushDefaultRun(function () {
-    //     astI.lengthAddOne();
-    // })
-    select.push(type.variableName, "expressionAna").
+    select.push([
+        jsKey.const,
+        jsKey.var,
+        jsKey.let
+    ], "variableKeyAna").
+    push(jsKey.function, "functionAna").
+    push([
+        type.variableName, 
+        type.number, 
+        operator.binaryOperator.add,
+        operator.binaryOperator.reduce
+    ], "rootNode").
     pushDefaultRun(function () {
         astI.lengthAddOne();
     })

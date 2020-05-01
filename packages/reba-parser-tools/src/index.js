@@ -20,6 +20,9 @@ const CallExpression = require("./obj/CallExpression");
 const MemberExpression = require("./obj/MemberExpression");
 const AssignmentPattern = require("./obj/AssignmentPattern");
 const ThisExpression = require("./obj/ThisExpression");
+const UnaryExpression = require("./obj/UnaryExpression");
+const UpdateExpression = require("./obj/UpdateExpression");
+const SequenceExpression = require("./obj/SequenceExpression");
 module.exports={
     config,
     ArrowFunctionExpression,
@@ -41,5 +44,8 @@ module.exports={
     CallExpression,
     MemberExpression,
     AssignmentPattern,
-    ThisExpression
+    ThisExpression,
+    UnaryExpression,
+    UpdateExpression,
+    SequenceExpression
 }

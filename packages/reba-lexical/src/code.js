@@ -33,14 +33,8 @@ module.exports = class {
         return this.code[this.codeStartLength - 1];
     }
     /**
-     * 用于去除空格
+     * 行数添加一
      */
-    trimCode() {
-        while (this.code[this.codeStartLength] === ' ') {
-            this.codeStartLength++;
-        }
-    }
-    
     rowAddOne() {
         this.row ++;
     }

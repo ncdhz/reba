@@ -1,1 +1,1 @@
-da+da*da
+fsf[fas + 10 + 20]
