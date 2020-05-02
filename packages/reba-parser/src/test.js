@@ -1,1 +1,3 @@
-fsf[fas + 10 + 20]
+x = {
+    return: uyy
+}

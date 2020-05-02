@@ -54,10 +54,10 @@ module.exports = class {
     }
     /**
      * 当前 token类型 是否与 type 相同
-     * @param {类型} type 
+     * @param {类型 可以是数组} t
      */
-    isType(type) {
-        return type === this.getNowTokenType();
+    isType(t) {
+        return type.isType(this.getNowTokenType(),t);
     }
     /**
      * 获取当前文件名
@@ -136,7 +136,13 @@ module.exports = class {
         return this.getBehindToken()
             ? this.getBehindToken().lexeme : undefined;
     }
-
+    /**
+     * 获取当前token的后一个token不排除 \n
+     */
+    getBehindOneTokenType(){
+        const token = this.tokens[this.startLength + 1];
+        return token? token.type:undefined;
+    }
     /**
      * 获取后面一个 token 的行
      * 判断到 \n 跳过
