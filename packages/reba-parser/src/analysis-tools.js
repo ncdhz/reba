@@ -26,17 +26,14 @@ module.exports = class {
     rootNode(parentNode) {
         const ast = new astObj.ExpressionStatement();
         const select = new selector(this);
-        ast.expression = select.push(type.variableName, ()=>{
-            if(type.isBinaryOperator(this.astI.getBehindTokenType())) {
+        ast.expression = select.push(this.selectExpressionArray(),"expressionAna").
+        push(type.variableName, () => {
+            if (type.isBinaryOperator(this.astI.getBehindTokenType())) {
                 return this.expressionAna(ast);
             } else {
                 return this.variableNameAna(ast);
             }
-        }).push([
-            type.number,
-            operator.binaryOperator.add,
-            operator.binaryOperator.reduce
-        ],"expressionAna").
+        }).
         run(this.astI.getNowTokenType(),[ast]);
         return ast;
     }
@@ -116,8 +113,9 @@ module.exports = class {
             object = this.returnIdentifierAna();
         }
         this.error.tokenAddOneAndUndefinedError();
-        this.error.nowTokenTypeError(type.variableName);
-        
+        if(!this.astI.isType(type.variableName)&&!type.isParent(this.astI.getNowTokenType(),jsKey)) {
+            this.error.syntaxError();
+        }
         const property = this.returnIdentifierAna();
         const ast = new astObj.MemberExpression(property, object);
 
@@ -237,7 +235,6 @@ module.exports = class {
         this.selectLiteral(selectKey).push(type.variableName,"returnIdentifierAna").
         pushDefaultRun(()=>{
             if(type.isParent(this.astI.getNowTokenType(), jsKey)) {
-                console.log(this.astI.getNowToken())
                 this.error.tokenAddOneAndUndefinedError();
                 return new astObj.Identifier(this.astI.getFrontTokenLexeme());
             }else {
@@ -377,11 +374,23 @@ module.exports = class {
      * 这个选择器针对于方法的身体和根元素的身体
      * @param {被填充内容的数组} body 
      */
-    getSelectorOne(body){
+    getSelectorOne(parentNode,body){
         const select = new selector(this);
         select.push([jsKey.const, jsKey.var, jsKey.let], "variableKeyAna").
-            push(this.selectExpressionArray(), "rootNode").
             push(jsKey.return, "returnAna").
+            push(this.selectExpressionArray(),"rootNode").
+            push(type.variableName,()=>{
+                // 用于判断标记
+                if (type.isType(this.astI.getBehindTokenType(), operator.conditionalOperator.colon)) {
+                    const ast = new astObj.LabeledStatement(this.astI.getNowTokenLexeme());
+                    // 用于调到 :
+                    this.astI.lengthAddOne();
+                    this.error.tokenAddOneAndUndefinedError();
+                    ast.body = this.expressionAna(parentNode);
+                    return ast;
+                }
+                return this.rootNode(parentNode);
+            }).
             push(operator.sequenceOperator.comma,()=>{
                 let data = body.pop();
                 // 逗号元素运行时前面必须有数据
@@ -404,7 +413,7 @@ module.exports = class {
      */
     blockContentAna(parentNode){
         const body = [];
-        const select = this.getSelectorOne(body);
+        const select = this.getSelectorOne(parentNode,body);
         // 循环当遇到 } 时退出
         while(!this.astI.isType(brackets.braces.rightBraces)) {
             const ast = select.run(this.astI.getNowTokenType(), [parentNode]);
@@ -627,7 +636,6 @@ module.exports = class {
             jsKey.false,
             jsKey.undefined,
             jsKey.null,
-            jsKey.function
         ];
     }
     /**

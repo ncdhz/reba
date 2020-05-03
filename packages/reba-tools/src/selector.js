@@ -67,6 +67,11 @@ module.exports = class {
         const returnData = [];
         let paramLen = 0;
 
+        /**
+         * 通过方法所在对象找到方法加以执行
+         * @param {方法路径数组} funNameArray 
+         * @param {方法所在对象} fun 
+         */
         function runObj(funNameArray,fun) {
             let obj = fun;
             for (let index = 1; index < funNameArray.length ; index++) {
@@ -79,6 +84,10 @@ module.exports = class {
             funArr(fun, obj);
         }
 
+        /**
+         * 找出路径对应对象中的函数
+         * @param {方法路径} funName 
+         */
         function anaObj(funName){
             const funNameArray = funName.split(".");
 
@@ -114,6 +123,10 @@ module.exports = class {
             }
         }
 
+        /**
+         * 解析路径中的,传给 分析对象
+         * @param {所有方法路径和} funName 
+         */
         function stringRun(funName){
             const  funNameArray = funName.split(",");
 
@@ -121,7 +134,11 @@ module.exports = class {
                 anaObj(funNameArray[index]);
             }
         }
-
+        /**
+         * 执行方法
+         * @param {方法} fun 
+         * @param {方法所在对象} object 
+         */
         function funArr(fun,object){
             let re = undefined;
             if (typeof fun === "function") {
@@ -137,9 +154,25 @@ module.exports = class {
             if (re) returnData.push(re);
         }
 
+        /**
+         * 运行方法并把返回值加入到最后一个参数
+         * @param {方法} fun 
+         */
+        function runFunAndJoinReturnData(fun) {
+            let param = params[paramLen];
+            if (typeof fun === "function") {
+                if (param instanceof Array) {
+                    param.push(returnData);
+                } else {
+                    param = [returnData];
+                }
+                const re = fun.apply(null, param);
+                if(re) returnData.push(re);
+            }
+        }
+
         function dataAna(obj){
             if (obj) {
-
                 if (obj.hasOwnProperty("before")) obj.before();
                 if (obj.runFunction instanceof Array) {
                     for (let index = 0; index < obj.runFunction.length; index++) {
@@ -149,15 +182,15 @@ module.exports = class {
                     funArr(obj.runFunction, null);
 
                 } else if (functionName) stringRun(functionName);
-
-                if (obj.hasOwnProperty("after")) obj.after();
+                
+                if (obj.hasOwnProperty("after")) runFunAndJoinReturnData(obj.after);
             } else if (that.hasOwnProperty("defaultRun")) {
                 funArr(that["defaultRun"], null);
             }
         }
         // 运行前必须运行
         if (this.hasOwnProperty("before")) {
-            funArr(this["before"], null);
+            this["before"]();
         }
         
         if(this.RegExp) {
@@ -174,20 +207,11 @@ module.exports = class {
         }else {
             dataAna(data[functionName]);
         }
+        
         // 运行后必须运行
         if(this.hasOwnProperty("after")) {
-
             const after = this["after"];
-            let param = params[paramLen];
-
-            if (typeof after === "function") {
-                if (param instanceof Array) {
-                    param.push(returnData);
-                } else{
-                    param = [returnData];
-                }
-                after.apply(null, param);
-            }
+            runFunAndJoinReturnData(after);
         }
 
         return returnData.length === 1 ? 

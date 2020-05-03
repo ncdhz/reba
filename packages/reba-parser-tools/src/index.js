@@ -23,6 +23,8 @@ const ThisExpression = require("./obj/ThisExpression");
 const UnaryExpression = require("./obj/UnaryExpression");
 const UpdateExpression = require("./obj/UpdateExpression");
 const SequenceExpression = require("./obj/SequenceExpression");
+const ReturnStatement = require("./obj/ReturnStatement");
+const LabeledStatement = require("./obj/LabeledStatement");
 module.exports={
     config,
     ArrowFunctionExpression,
@@ -47,5 +49,7 @@ module.exports={
     ThisExpression,
     UnaryExpression,
     UpdateExpression,
-    SequenceExpression
+    SequenceExpression,
+    ReturnStatement,
+    LabeledStatement
 }

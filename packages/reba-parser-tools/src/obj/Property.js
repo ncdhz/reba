@@ -1,9 +1,9 @@
 const config = require("../config");
 const Identifier = require("./Identifier");
 module.exports = class Property{
-    constructor(key){
+    constructor(){
         this.type = config.Property;
-        this.key = new Identifier(key);
+        this.key = null;
         this.value = null;
     }
 }

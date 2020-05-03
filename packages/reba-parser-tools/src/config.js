@@ -47,5 +47,9 @@ module.exports = {
     // 更新表达式
     UpdateExpression:"UpdateExpression",
     // 序列表达式
-    SequenceExpression:"SequenceExpression"
+    SequenceExpression:"SequenceExpression",
+    // 返回语句
+    ReturnStatement:"ReturnStatement",
+    // 标记
+    LabeledStatement:"LabeledStatement"
 }
