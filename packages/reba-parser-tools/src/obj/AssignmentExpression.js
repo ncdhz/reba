@@ -1,10 +1,9 @@
 const config = require("../config");
-const Identifier = require("./Identifier");
 module.exports = class AssignmentExpression {
-    constructor(left, operator, right) {
+    constructor() {
         this.type = config.AssignmentExpression;
-        this.left = left;
-        this.operator = operator;
-        this.right = right;
+        this.left = null;
+        this.operator = null;
+        this.right = null;
     }
 }

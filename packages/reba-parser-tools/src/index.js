@@ -25,6 +25,10 @@ const UpdateExpression = require("./obj/UpdateExpression");
 const SequenceExpression = require("./obj/SequenceExpression");
 const ReturnStatement = require("./obj/ReturnStatement");
 const LabeledStatement = require("./obj/LabeledStatement");
+const ObjectPattern = require("./obj/ObjectPattern");
+const ArrayPattern = require("./obj/ArrayPattern");
+const SpreadElement = require("./obj/SpreadElement");
+const ConditionalExpression = require("./obj/ConditionalExpression");
 module.exports={
     config,
     ArrowFunctionExpression,
@@ -51,5 +55,9 @@ module.exports={
     UpdateExpression,
     SequenceExpression,
     ReturnStatement,
-    LabeledStatement
+    LabeledStatement,
+    ObjectPattern,
+    ArrayPattern,
+    SpreadElement,
+    ConditionalExpression
 }

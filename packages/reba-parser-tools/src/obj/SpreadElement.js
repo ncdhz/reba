@@ -1,7 +1,7 @@
 const config = require("../config");
-module.exports = class RestElement {
+module.exports = class SpreadElement {
     constructor(argument) {
-        this.type = config.RestElement;
+        this.type = config.SpreadElement;
         this.argument = argument;
     }
 }

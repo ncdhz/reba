@@ -323,6 +323,8 @@ module.exports = {
     },
     // ...
     spread: "spread",
+    // `
+    template: "template",
     // ;
     semicolon: "semicolon",
     // =>

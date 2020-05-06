@@ -29,14 +29,21 @@ module.exports = class {
      * 当前 token 标识符向后移动 1
      */
     lengthAddOne() {
-        this.startLength++;
-        
-        while (this.isType(type.lineFeed) || 
-        this.isType(type.singleLineComment) || this.isType(type.multilineComment)){
+        this.startLength ++;
+        while (this.isType([type.lineFeed, type.singleLineComment, type.multilineComment])){
             if (this.isType(type.singleLineComment) || this.isType(type.multilineComment)) {
                 this.notesStorage();
             }
             this.startLength ++;
+        }
+    }
+    /**
+     * token 标记长度向后移动
+     */
+    lengthReduceOne(){
+        this.startLength --;
+        while (this.isType([type.lineFeed, type.singleLineComment, type.multilineComment])){
+            this.startLength --;
         }
     }
     /**

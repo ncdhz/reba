@@ -68,17 +68,31 @@ module.exports = class {
     /**
      * 当词法分析器检测到是用$或_时使用的分析器
      */
-    variableAna() {
+    variable() {
         const start = this.codeInformation.codeStartLength;
         let variableName = this.codeInformation.getTokenLengthAddOne();
-        while (this.codeInformation.codeStartLength < this.codeInformation.codeLength &&
+        while (this.codeInformation.getNowChar() &&
             /[a-zA-Z\$0-9\_]/.test(this.codeInformation.getNowChar())) {
             variableName += this.codeInformation.getTokenLengthAddOne();
         }
-        this.codeInformation.setToken(start, this.codeInformation.codeStartLength - 1, type.variableName, variableName)
-    
+        this.codeInformation.setToken(start, this.codeInformation.codeStartLength - 1, type.variableName, variableName);    
     }
-
+    /**
+     * JavaScript 中模板处理
+     */
+    template(){
+        const start = this.codeInformation.codeStartLength;
+        let templateOne = this.codeInformation.getTokenLengthAddOne();
+        while (this.codeInformation.getNowChar() && 
+            this.codeInformation.getNowChar() !== "`") {
+            if (this.codeInformation.getNowChar() === "\\") {
+                templateOne += this.codeInformation.getTokenLengthAddOne();
+            }
+            templateOne += this.codeInformation.getTokenLengthAddOne();
+        }
+        templateOne += this.codeInformation.getTokenLengthAddOne();
+        this.codeInformation.setToken(start, this.codeInformation.codeStartLength - 1, type.template, templateOne);
+    }   
     /**
      * 用与处理所有的符号
      */

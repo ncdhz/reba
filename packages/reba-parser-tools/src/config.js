@@ -30,10 +30,14 @@ module.exports = {
     ArrowFunctionExpression:"ArrowFunctionExpression",
     // 对象表达式
     ObjectExpression:"ObjectExpression",
+    // 对象模式
+    ObjectPattern:"ObjectPattern",
     // 对象里面的属性
     Property:"Property",
     // 数组
     ArrayExpression:"ArrayExpression",
+    // 数组模式
+    ArrayPattern:"ArrayPattern",
     // 调用函数
     CallExpression:"CallExpression",
     // 成员表达式
@@ -51,5 +55,7 @@ module.exports = {
     // 返回语句
     ReturnStatement:"ReturnStatement",
     // 标记
-    LabeledStatement:"LabeledStatement"
+    LabeledStatement:"LabeledStatement",
+    // 展开元素
+    SpreadElement:"SpreadElement"
 }

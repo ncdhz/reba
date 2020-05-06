@@ -1,5 +1,4 @@
 const config = require("../config");
-const Identifier = require("./Identifier");
 module.exports = class MemberExpression {
 
     constructor(property, object) {
