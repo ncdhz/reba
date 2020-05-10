@@ -57,5 +57,31 @@ module.exports = {
     // 标记
     LabeledStatement:"LabeledStatement",
     // 展开元素
-    SpreadElement:"SpreadElement"
+    SpreadElement:"SpreadElement",
+    // 逻辑表达式
+    LogicalExpression:"LogicalExpression",
+    // if 语句
+    IfStatement:"IfStatement",
+    // new 表达式
+    NewExpression:"NewExpression",
+    // while 语句
+    WhileStatement:"WhileStatement",
+    // 空语句
+    EmptyStatement:"EmptyStatement",
+    // do while 语句
+    DoWhileStatement:"DoWhileStatement",
+    // break 语句
+    BreakStatement:"BreakStatement",
+    // continue 语句
+    ContinueStatement:"ContinueStatement",
+    // for 语句
+    ForStatement:"ForStatement",
+    // for in 语句
+    ForInStatement:"ForInStatement",
+    // for of 语句
+    ForOfStatement:"ForOfStatement",
+    // switch 语句
+    SwitchStatement:"SwitchStatement",
+    // switch 中的 case
+    SwitchCase:"SwitchCase"
 }

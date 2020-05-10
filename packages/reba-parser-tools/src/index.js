@@ -29,6 +29,20 @@ const ObjectPattern = require("./obj/ObjectPattern");
 const ArrayPattern = require("./obj/ArrayPattern");
 const SpreadElement = require("./obj/SpreadElement");
 const ConditionalExpression = require("./obj/ConditionalExpression");
+const LogicalExpression = require("./obj/LogicalExpression");
+const IfStatement = require("./obj/IfStatement");
+const NewExpression = require("./obj/NewExpression");
+const WhileStatement = require("./obj/WhileStatement");
+const EmptyStatement = require("./obj/EmptyStatement");
+const DoWhileStatement = require("./obj/DoWhileStatement");
+const ContinueStatement = require("./obj/ContinueStatement");
+const BreakStatement = require("./obj/BreakStatement");
+const ForStatement = require("./obj/ForStatement");
+const ForOfStatement = require("./obj/ForOfStatement");
+const ForInStatement = require("./obj/ForInStatement");
+const SwitchStatement = require("./obj/SwitchStatement");
+const SwitchCase = require("./obj/SwitchCase");
+
 module.exports={
     config,
     ArrowFunctionExpression,
@@ -59,5 +73,18 @@ module.exports={
     ObjectPattern,
     ArrayPattern,
     SpreadElement,
-    ConditionalExpression
+    ConditionalExpression,
+    LogicalExpression,
+    IfStatement,
+    NewExpression,
+    WhileStatement,
+    EmptyStatement,
+    DoWhileStatement,
+    ContinueStatement,
+    BreakStatement,
+    ForStatement,
+    ForInStatement,
+    ForOfStatement,
+    SwitchStatement,
+    SwitchCase
 }

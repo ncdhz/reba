@@ -132,7 +132,9 @@ module.exports = class {
     getFrontToken(){
         let i = 1;
         for ( ;this.tokens[this.startLength - i]
-            && type.isType(this.tokens[this.startLength - i].type,type.lineFeed); i++);
+            && type.isType(this.tokens[this.startLength - i].type, [type.lineFeed,
+                type.multilineComment,
+                type.singleLineComment]); i++);
         return this.tokens[this.startLength - i];
     }
     /**
@@ -172,7 +174,9 @@ module.exports = class {
     getBehindToken() {
         let i = 1;
         for (; this.tokens[this.startLength + i]
-            && type.isType(this.tokens[this.startLength + i].type, type.lineFeed); i++);
+            && type.isType(this.tokens[this.startLength + i].type, [type.lineFeed,
+            type.multilineComment,
+            type.singleLineComment]); i++);
         return this.tokens[this.startLength + i];
     }
     /**

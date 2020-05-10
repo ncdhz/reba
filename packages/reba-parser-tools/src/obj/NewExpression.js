@@ -1,9 +1,9 @@
 const config = require("../config");
-module.exports = class CallExpression {
+module.exports = class NewExpression {
+
     constructor() {
-        this.type = config.CallExpression;
+        this.type = config.NewExpression;
         this.callee = null;
         this.arguments = [];
     }
-
 }

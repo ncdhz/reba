@@ -3,7 +3,7 @@ module.exports = class{
     constructor(astI){
         this.astInformation = astI;
     }
-
+    
     syntaxErrorAna(row, lexeme, filename){
         throw new Error("syntax error : { "+ (filename === ''?"source code ":"file name: [ "+
         filename+" ] ")+ "row:[ " + row + 

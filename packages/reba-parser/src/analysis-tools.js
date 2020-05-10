@@ -27,8 +27,8 @@ module.exports = class {
         const ast = new astObj.ExpressionStatement();
         const select = new selector(this);
         ast.expression = select.push(this.selectExpressionArray(),"expressionAna").
-            push(type.variableName,"expressionAna").
         run(this.astI.getNowTokenType(),[ast]);
+
         return ast;
     }
 
@@ -44,11 +44,11 @@ module.exports = class {
          * 一个类型有可能有多个变量
          * let x, y
          */
-        ast.declarations = this.variableKeyDeclarationsAna(ast);
+        ast.declarations = this.variableKeyDeclarationsAna(ast,parentNode);
         return ast;
     }
 
-    variableKeyDeclarationsAna(parentNode) {
+    variableKeyDeclarationsAna(parentNode,node) {
         const declarations = [];
         const select = new selector(this);
         /**
@@ -79,7 +79,9 @@ module.exports = class {
             if(type.isType(this.astI.getNowTokenType(), type.arrowFunction)) {
                 declarator.init = this.arrowFunctionAna(declarator.init);
             }
-            if (!declarator.init&&type.isType(parentNode.kind,jsKey.const)) this.error.syntaxError(); 
+            if (!declarator.init&&
+                type.isType(parentNode.kind,jsKey.const)&&
+                !type.isType(node.type, astConfig.ForStatement)) this.error.syntaxError(); 
         } while (this.astI.isType(operator.sequenceOperator.comma));
         return declarations;
     }
@@ -164,25 +166,29 @@ module.exports = class {
             return element;
         }
         const ast = new astObj.ArrowFunctionExpression();
-        if(type.isType(parentNode.type,astConfig.SequenceExpression)) {
-            const expressions = parentNode.expressions;
-            /**
-             * 用于对参数中的数组和对象进行处理
-             * 
-             */
-            for (let index = 0; index < expressions.length; index++) {
-                let element = expressions[index];
-                element = expressions[index] = formatParam(element);
-                expressions[index] = spreadToRest(element);
-            }
-            ast.params = expressions;
-        } else if(!this.astI.isType(type.arrowFunction)) {
-            ast.params.push(this.returnIdentifierAna());
-        } else {
-            let element = formatParam(parentNode);
-            element = spreadToRest(element);
-            ast.params.push(element);
-        } 
+        // parentNode 当传入的参数不是空时处理
+        if(parentNode) {
+            if (type.isType(parentNode.type, astConfig.SequenceExpression)) {
+                const expressions = parentNode.expressions;
+                /**
+                 * 用于对参数中的数组和对象进行处理
+                 * 
+                 */
+                for (let index = 0; index < expressions.length; index++) {
+                    let element = expressions[index];
+                    element = expressions[index] = formatParam(element);
+                    expressions[index] = spreadToRest(element);
+                }
+                ast.params = expressions;
+            } else if (!this.astI.isType(type.arrowFunction)) {
+                ast.params.push(this.returnIdentifierAna());
+            } else {
+                let element = formatParam(parentNode);
+                element = spreadToRest(element);
+                ast.params.push(element);
+            } 
+        }
+        
 
         this.astI.lengthAddOne();
 
@@ -201,7 +207,7 @@ module.exports = class {
         if (type.isType(node.type, astConfig.ExpressionStatement)) {
             node.expression = this.sequenceAna(node.expression);
         } else {
-            return this.sequenceAna(data);
+            return this.sequenceAna(node);
         }
         return node;
     }
@@ -230,62 +236,95 @@ module.exports = class {
      */
     objMemberAna(parentNode) {
         let object = null;
-        if (type.isType(parentNode.type, astConfig.MemberExpression)) {
+        if (this.astI.isType(operator.memberOperator.spot)) {
             object = parentNode;
+        } else if(this.astI.isType(jsKey.this)){
+            object = new astObj.ThisExpression();
+            this.error.tokenAddOneAndUndefinedError();
         } else {
             object = this.returnIdentifierAna();
         }
         this.error.tokenAddOneAndUndefinedError();
-        if(!this.astI.isType(type.variableName)&&!type.isParent(this.astI.getNowTokenType(),jsKey)) {
+        if(!this.astI.isType(type.variableName) && !type.isParent(this.astI.getNowTokenType(),jsKey)) {
             this.error.syntaxError();
         }
         const property = this.returnIdentifierAna();
         const ast = new astObj.MemberExpression(property, object);
-
+        return this.getSelectorThree().run(this.astI.getNowTokenType(), [ast]);
+    }
+    /**
+     * 第三个选择器
+     * 此选择器主要运用在 callAna objMemberAna arrayMemberAna 等分析器中
+     */
+    getSelectorThree(){
         const select = new selector(this);
-        const data = select.push(brackets.parentheses.leftParentheses,"callAna").
-            push(operator.memberOperator.spot, "objMemberAna").run(this.astI.getNowTokenType(), [ast]);
-        
-        return data ? data: ast;
-
+        return select.push(brackets.parentheses.leftParentheses, "callAna").
+            push(brackets.middlebrackets.leftMiddlebrackets, "arrMemberAna").
+            push(operator.memberOperator.spot, "objMemberAna").
+            pushDefaultRun((ast) => {
+                if (type.isAssignmentOperator(this.astI.getNowTokenType()))
+                    return this.equalAna(ast);
+                return ast;
+            });
     }
     /**
      * 函数成员分析器
      * @param {父节点} parentNode 
      */
     arrMemberAna(parentNode) {
-        const object = this.returnIdentifierAna();
-        const ast = new astObj.MemberExpression(null,object);
-        this.astI.lengthAddOne();
-        const data = this.expressionAna(ast);
-        if (this.astI.isType(operator.sequenceOperator.comma)) {
-            ast.property = this.sequenceAna(data);
+        const ast = new astObj.MemberExpression(null, null);
+        if (this.astI.isType(brackets.middlebrackets.leftMiddlebrackets)) {
+            ast.object = parentNode;
+        } else if(this.astI.isType(jsKey.this)) {
+            ast.object = new astObj.ThisExpression();
+            this.astI.lengthAddOne();
         } else {
-            ast.property = data;
+            ast.object = this.returnIdentifierAna();
         }
         this.astI.lengthAddOne();
-        return ast;
+        const data = this.expressionAna(ast);
+        ast.property = this.isSequenceAna(data);
+        this.astI.lengthAddOne();
+        return this.getSelectorThree().run(this.astI.getNowTokenType(),[ast]);
     }
     /**
      * 对象中的方法分析
      * @param {父节点} parentNode 
      */
     callAna(parentNode) {
-        let ast = null;
-        if (type.isType(parentNode.type, astConfig.MemberExpression)) {
-            ast = new astObj.CallExpression(parentNode);
+        const ast = new astObj.CallExpression();
+        if (this.astI.isType(brackets.parentheses.leftParentheses)) {
+            ast.callee = parentNode;
+        } else if (this.astI.isType(jsKey.this)){
+            ast.callee = new astObj.ThisExpression();
+            this.error.tokenAddOneAndUndefinedError();
         } else {
-            ast = new astObj.CallExpression(this.returnIdentifierAna());
+            ast.callee = this.returnIdentifierAna();
         }
         this.error.tokenAddOneAndUndefinedError();
 
         if(!this.astI.isType(brackets.parentheses.rightParentheses)) {
-            ast.arguments = this.callParamAna(ast)
+            ast.arguments = this.callParamAna(ast);
         }
-        if(this.astI.isType(brackets.parentheses.rightParentheses)) this.astI.lengthAddOne();
-        return ast;
-    }
 
+        if(this.astI.isType(brackets.parentheses.rightParentheses)) this.astI.lengthAddOne();
+        return this.getSelectorThree().run(this.astI.getNowTokenType(), [ast]);
+    }
+    /**
+     * 分析执行方法的参数
+     * @param {父类型} parentNode 
+     */
+    callParamAna(parentNode) {
+        const params = [];
+        const select = this.getSelectorTwo();
+        // 用于处理 ... 展开表达式
+        select.push(type.spread, "spreadAna");
+        while (!type.isType(brackets.parentheses.rightParentheses, [this.astI.getNowTokenType(),
+            this.astI.getFrontTokenType()])) {
+            params.push(select.run(this.astI.getNowTokenType(), [parentNode]));
+        }
+        return params;
+    }
     
     /**
      * 对象中赋值分析
@@ -297,20 +336,16 @@ module.exports = class {
             return this.expressionAna(parentNode);
         }
         const ast = new astObj.AssignmentExpression();
-        ast.left = new astObj.Identifier(this.astI.getNowTokenLexeme());
-        this.astI.lengthAddOne();
+
+        if(type.isAssignmentOperator(this.astI.getNowTokenType())) {
+            ast.left = parentNode;
+        } else {
+            ast.left = this.returnIdentifierAna();
+        }
         ast.operator = this.astI.getNowTokenLexeme();
         this.error.tokenAddOneAndUndefinedError();
+        ast.right = this.expressionAna(ast);
         
-        if(type.isAssignmentOperator(this.astI.getBehindTokenType())) {
-            ast.right = this.equalAna(parentNode);
-        }else {
-            ast.right = this.expressionAna(parentNode);
-            // 当前一个字符为 ( 时，token标记符向前移动一位。
-            if(type.isType(brackets.parentheses.rightParentheses,this.astI.getFrontTokenType())) {
-                this.astI.lengthReduceOne()
-            }
-        }
         return ast;
 
     }
@@ -404,13 +439,12 @@ module.exports = class {
             // 如果当前元素为 : 向后平移
             if (this.astI.isType(operator.conditionalOperator.colon)) 
                 this.error.tokenAddOneAndUndefinedError();
-
+            
             ast.value = selectValue.run(this.astI.getNowTokenType(), [ast]);
             properties.push(ast);
         } while (!this.astI.isType(brackets.braces.rightBraces));
         return properties;
     }
-
     /**
      * 第一个通用分析器
      */
@@ -419,7 +453,7 @@ module.exports = class {
         expressionArray.push(brackets.braces.leftBraces);
         expressionArray.push(brackets.middlebrackets.leftMiddlebrackets);
         expressionArray.push(jsKey.function);
-
+        expressionArray.push(jsKey["function*"]);
         const select = new selector(this);
         this.selectLiteral(select).
             push(expressionArray, "expressionAna").pushDefaultRun(() => {
@@ -453,7 +487,7 @@ module.exports = class {
             }
         }
         this.astI.lengthAddOne();
-        return ast;
+        return this.getSelectorThree().run(this.astI.getNowTokenType(),[ast]);
     }
     /**
      * 用于判断函数参数中拥有数组的约束
@@ -477,7 +511,10 @@ module.exports = class {
     arrayElementAna(parentNode) {
         const elements = [];
         const select =this.getSelectorTwo();
-        select.push(type.spread, "spreadAna");
+            select.push(type.spread, "spreadAna").
+            push(operator.sequenceOperator.comma,()=>{
+                return null;
+            });
         do{
             elements.push(select.run(this.astI.getNowTokenType(),[parentNode]));
         }while(!this.astI.isType(brackets.middlebrackets.rightMiddlebrackets));
@@ -488,30 +525,32 @@ module.exports = class {
      * @param {父节点} parentNode 
      */
     functionAna(parentNode) {
+        
+        let ast = null;
+        // 判断 function 应该用的语法树
+        if (type.isType(parentNode.type, astConfig.AssignmentExpression)) {
+            ast = new astObj.FunctionExpression();
+        } else {
+            ast = new astObj.FunctionDeclaration();
+        }
+
+        if (this.astI.isType(jsKey["function*"])) {
+            ast.generator = true;
+        }
         /**
          * function 开头
          * 首先向后平移 token (当前token类型为 function时)
          * 如果下一个 token 的类型不是 variableName 报错 （当父元素为 Program 类型时）
-         * 再次向后平移 如果 token type 不是 （ 报错 
+         * 再次向后平移 如果 token type 不是 （ 报错
          * 继续平移 如果不是 ) 就进入参数分析器
          */
-        if(this.astI.isType(jsKey.function)) this.error.tokenAddOneAndUndefinedError();
-        let name =null;
-        let ast = null;
+        if (this.astI.isType([jsKey.function,jsKey["function*"]])) this.error.tokenAddOneAndUndefinedError();
         // 当父元素类型为 Program 函数必须要有 name 参数
         if(type.isType(parentNode.type, astConfig.Program)) {
             this.error.nowTokenTypeError(type.variableName);
         }
         if (!this.astI.isType(brackets.parentheses.leftParentheses)) {
-            name = this.astI.getNowTokenLexeme();
-            
-            this.error.tokenAddOneAndUndefinedError();
-        }
-        // 判断 function 应该用的语法树
-        if (type.isType(parentNode.type, astConfig.Program)) {
-            ast = new astObj.FunctionDeclaration(name);
-        }else {
-            ast = new astObj.FunctionExpression(name);
+            ast.name = this.returnIdentifierAna();
         }
         this.error.nowTokenTypeError(brackets.parentheses.leftParentheses);
         this.error.tokenAddOneAndUndefinedError();
@@ -526,7 +565,6 @@ module.exports = class {
         this.error.nowTokenTypeError(brackets.braces.leftBraces);
         // 交给快处理器
         ast.body = this.blockAna(ast);
-        
         return ast;
     }
     /**
@@ -553,8 +591,7 @@ module.exports = class {
                 this.error.syntaxError();
             });
 
-        while (!type.isType(brackets.parentheses.rightParentheses, [this.astI.getNowTokenType(),
-        this.astI.getFrontTokenType()])) {
+        while (!type.isType(brackets.parentheses.rightParentheses, this.astI.getNowTokenType())) {
             const data = select.run(this.astI.getNowTokenType(), [parentNode]);
             params.push(this.assignmentExpressionToPattern(data));
         }
@@ -608,19 +645,27 @@ module.exports = class {
         const select = new selector(this);
         select.push([jsKey.const, jsKey.var, jsKey.let], "variableKeyAna").
             push(jsKey.return, "returnAna").
-            push(jsKey.function,"functionAna").
+            push([jsKey.function, jsKey["function*"]],"functionAna").
             push(this.selectExpressionArray(),"rootNode").
-            push(brackets.middlebrackets.leftMiddlebrackets,"arrayAna").
+            push(brackets.braces.leftBraces, "blockAna").
+            push(jsKey.while,"whileAna").
+            push(jsKey.do, "doWhileAna").
+            push(jsKey.if, "ifAna").
+            push(jsKey.for, "forAna").
+            push(jsKey.switch, "switchAna").
+            push([jsKey.break,jsKey.continue],"breakAndContinueAna").
             push(type.variableName,()=>{
                 // 用于判断标记
                 if (type.isType(this.astI.getBehindTokenType(), operator.conditionalOperator.colon)) {
                     const ast = new astObj.LabeledStatement(this.astI.getNowTokenLexeme());
-                    // 用于调到 :
+                    // 平移 token 到 : 之后
                     this.astI.lengthAddOne();
                     this.error.tokenAddOneAndUndefinedError();
-                    ast.body = this.expressionAna(parentNode);
+                    ast.body = select.run(this.astI.getNowTokenType(),[parentNode]);
                     return ast;
                 }
+                if (type.isType(parentNode.type, astConfig.ForStatement))
+                    return this.expressionAna(parentNode);
                 return this.rootNode(parentNode);
             }).
             push(operator.sequenceOperator.comma,()=>{
@@ -633,12 +678,13 @@ module.exports = class {
                 }
             }).
             push(operator.conditionalOperator.questionMark,()=>{
-                return this.conditionalAna(body.pop());
+                return this.inputConditionalAna(body.pop());
             }).
             push(type.arrowFunction,()=>{
                 // 交给箭头函数处理
                 return this.inputArrowFunctionAna(body.pop());
             }).
+            push([]).
             pushDefaultRun(() => {
                 this.astI.lengthAddOne();
             });
@@ -664,39 +710,58 @@ module.exports = class {
      * @param {父节点} parentNode 
      */
     inputConditionalAna(parentNode) {
-        const select = selector(this);
-        return select.push(astConfig.SequenceExpression,()=>{
-
-        }).
-        run(parentNode.type, [parentNode]);
+        const select =new selector(this);
+        return select.push(astConfig.SequenceExpression,(node)=>{
+            const data = this.conditionalAna(node.expressions.pop());
+            node.expressions.push(data);
+            return node;
+        }).push([astConfig.Identifier, 
+            astConfig.Literal, 
+            astConfig.BinaryExpression,
+            astConfig.ArrowFunctionExpression,
+            astConfig.FunctionExpression
+        ],"conditionalAna").
+        push(astConfig.ExpressionStatement,(node)=>{
+            const expression=node.expression;
+            parentNode.expression = select.run(expression.type, [expression]);
+            return parentNode;
+        }).run(parentNode.type, [parentNode]);
     }
     /**
      * 三元表达式处理
-     * @param {父节点} parentNode 
+     * @param {test 节点} parentNode 
      */
-    conditionalAna(parentNode){
+    conditionalAna(node){
         const ast =new astObj.ConditionalExpression();
-        ast.test = parentNode;
+        ast.test = node;
         this.error.tokenAddOneAndUndefinedError();
-        ast.consequent = this.expressionAna();
+        ast.consequent = this.expressionAna(ast);
         this.error.tokenAddOneAndUndefinedError();
-        ast.alternate = this.expressionAna();
+        ast.alternate = this.expressionAna(ast);
         return ast;
     } 
-
+    
     /**
-     * 分析执行方法的参数
-     * @param {父类型} parentNode 
+     * 逻辑表达式处理
+     * @param {可能是左节点或者右节点} node 
+     * @param {父节点} parentNode
      */
-    callParamAna(parentNode){
-        const params = [];
-        const select = this.getSelectorTwo();
-        // 用于处理 ... 展开表达式
-        select.push(type.spread,"spreadAna")
-        while (!type.isType(brackets.parentheses.rightParentheses,[this.astI.getNowTokenType(),this.astI.getFrontTokenType()])) {
-            params.push(select.run(this.astI.getNowTokenType(), [parentNode]));
-        }
-        return params;
+    logicalAna(parentNode,node) {
+        let ast = new astObj.LogicalExpression(this.astI.getNowTokenLexeme());
+        if (type.isType(parentNode.type, astConfig.LogicalExpression) && 
+            type.isType(parentNode.operator, ["&&", this.astI.getNowTokenLexeme()])) {
+            ast.left = parentNode.left;
+            ast.operator = parentNode.operator;
+            ast.right = node;
+            parentNode.left = ast;
+            parentNode.operator = this.astI.getNowTokenLexeme();
+            this.error.tokenAddOneAndUndefinedError();
+            return this.expressionAna(ast)
+        } 
+        ast.left = node;
+        this.error.tokenAddOneAndUndefinedError();
+        ast.right = this.expressionAna(ast);
+        return ast;
     }
     /**
      * 表达式处理 1+2+3
@@ -707,30 +772,36 @@ module.exports = class {
         const opData = [];
         const suffixData = [];
         let goOut = false;
-        /**
-         * 用于处理 opData中的符号
-         * 当现在获取的符号优先级小于等于 opData 顶上的符号时 弹出 opData 中的符号到suffixData中
-         * 当获取的符号优先级大于 opData 顶上的符号时添加符号到 suffixData 中
-         */
-        const opAna=(ast)=>{
-            
-            if (goOut) return;
 
-            if (ast.length > 0) suffixData.push(ast[0]);
+        const member = () => {
+            if (type.isType(this.astI.getFrontTokenType(), brackets.parentheses.rightParentheses) &&
+                suffixData.length>0) return true;
+            return false;
+        }
 
-            if (this.astI.isType(brackets.parentheses.rightParentheses)) return;
-
-            // 用于处理 => 箭头函数
-            if(this.astI.isType(type.arrowFunction)) {
-                suffixData.push(this.arrowFunctionAna(suffixData.pop()));
-                return;
+        const select1 = new selector(this);
+        select1.push(type.arrowFunction, () => {
+            return this.arrowFunctionAna(suffixData.pop());
+        }).push(brackets.parentheses.leftParentheses, () => {
+            if (member()) {
+                return this.callAna(suffixData.pop());
             }
-            if (this.astI.isType(operator.sequenceOperator.comma)) {
-                goOut = true;
-                return;
+        }).push(brackets.middlebrackets.leftMiddlebrackets, () => {
+            if (member()) {
+                return this.arrMemberAna(suffixData.pop());
             }
-            if (type.isBinaryOperator(this.astI.getNowTokenType())) {
-
+        }).push(operator.memberOperator.spot, () => {
+            if (member()) {
+                return this.objMemberAna(suffixData.pop());
+            }
+        }).pushDefaultRun(()=>{
+            /**
+            * 用于处理 opData中的符号
+            * 当现在获取的符号优先级小于等于 opData 顶上的符号时 弹出 opData 中的符号到suffixData中
+            * 当获取的符号优先级大于 opData 顶上的符号时添加符号到 suffixData 中
+            */
+            if (type.isBinaryOperator(this.astI.getNowTokenType()) ||
+                this.astI.isType(jsKey.instanceof)) {
                 const p1 = type.getPriority(this.astI.getNowTokenType());
                 while (opData.length > 0) {
                     let op = opData.pop();
@@ -748,18 +819,35 @@ module.exports = class {
                     opData.push(this.astI.getNowToken());
                 }
                 this.astI.lengthAddOne();
-            }else {
-                if(this.astI.isType(type.semicolon)) {
-                    this.astI.lengthAddOne();
-                }
+            } else {
                 goOut = true;
             }
+        });
 
+        const opAna=(ast)=>{
+            
+            if (goOut) return;
+
+            if (ast.length > 0) suffixData.push(ast[0]);
+
+            if (this.astI.isType(brackets.parentheses.rightParentheses)) return;
+            
+            if (this.astI.isType(operator.sequenceOperator.comma)) {
+                goOut = true;
+                return;
+            }
+            const data = select1.run(this.astI.getNowTokenType());
+            // 当选择器处理数据不为空时添加数据到 suffixData
+            if (data) {
+                suffixData.push(data);
+                return;
+            }
         }
         /**
          * 用于构建表达式选择器
          */
         const select = new selector(this);
+
         this.selectLiteral(select).push(type.variableName, "variableNameAna").push([
             // 用于处理 ++ --
             operator.updateOperator.addOne,
@@ -768,24 +856,39 @@ module.exports = class {
             push(brackets.parentheses.leftParentheses, () => {
                 // 用递归的模式处理( 中的数据
                 this.error.tokenAddOneAndUndefinedError();
-                suffixData.push(this.expressionAna(parentNode));
-                // 用于最后扫描到 ) 是否向后平移token
+                const data = this.expressionAna(parentNode);
+                if (data) suffixData.push(data);
+                // 当扫描为 , 时启动 sequenceAna 处理
                 if (this.astI.isType(operator.sequenceOperator.comma)) {
                     this.error.tokenAddOneAndUndefinedError();
                     suffixData.push(this.sequenceAna(suffixData.pop()));
                 }
+            // 当为 （ 时数据处理
             }).push(brackets.parentheses.rightParentheses, () => {
                 this.astI.lengthAddOne();
+                if (!this.astI.isType([type.arrowFunction,
+                    brackets.parentheses.leftParentheses,
+                    brackets.middlebrackets.leftMiddlebrackets,
+                    operator.memberOperator.spot]) && 
+                    !type.isBinaryOperator(this.astI.getNowTokenType()) && 
+                    !type.isAssignmentOperator(this.astI.getNowTokenType())) {
+                        this.astI.lengthReduceOne();
+                    }
                 goOut = true;
             }).
             push(jsKey.undefined, "returnIdentifierAna").
-            push(jsKey.function, "functionAna").
+            push([jsKey.function,jsKey["function*"]], "functionAna").
+            push(jsKey.new, "newAna").
             // 当前token 类型为 add 或者 reduce 时处理。
-            //因为当是这两种情况时有可能是负数或者正数
+            // 因为当是这两种情况时有可能是负数或者正数
+            // 或者当为非或逻辑非是处理
             push([operator.binaryOperator.add,
-            operator.binaryOperator.reduce],
+            operator.binaryOperator.reduce,
+            operator.unaryOperator.inverse,
+            operator.unaryOperator.logicInverse,
+            jsKey.typeof],
                 () => {
-                    const tree = this.positiveAndNegativeAna(parentNode);
+                    const tree = this.unaryAna(parentNode);
                     return tree ? tree : this.error.syntaxError();
                 }).push(brackets.braces.leftBraces, "objectAna").
             push([operator.sequenceOperator.comma, type.semicolon], () => {
@@ -793,7 +896,9 @@ module.exports = class {
                 goOut = true;
             }).
             push(type.spread, "spreadAna").
-            push(brackets.middlebrackets.leftMiddlebrackets, "arrayAna").pushDefaultRun(() => {
+            push(brackets.middlebrackets.leftMiddlebrackets, "arrayAna").
+            push(jsKey.this,"thisAna").
+            pushDefaultRun(() => {
                 this.error.syntaxError();
             }).pushAfter(opAna);
 
@@ -803,35 +908,55 @@ module.exports = class {
             if (goOut) return;
             dataAna();
         }
-
+        // 用于执行递归函数用后缀表达式的方式分析表达式
         dataAna();
 
         while(opData.length > 0 ) {
             suffixData.push(opData.pop())
         }
-        if(suffixData.length === 1) return suffixData[0];
-        // 当表达式没有数据时报错 
-        if(suffixData.length === 0) this.error.syntaxError();
-        // 将后缀表达式转换为语法树
-        // 遇到小树 添加到 opData 遇到 符号在 opData 中提取栈尾两个元素进行运算
-        for (let index = 0; index < suffixData.length; index++) {
-            const element = suffixData[index];
-            if (type.isBinaryOperator(element.type)) {
-                const right = opData.pop();
-                const left = opData.pop();
-                opData.push(new astObj.BinaryExpression(left, element.lexeme, right));
-            } else {
-                opData.push(element);
+
+        let returnData = null;
+        // 当表达式没有数据时报错
+        if(suffixData.length === 0 && !this.astI.isType(type.arrowFunction)) {
+            this.error.syntaxError();
+        } else if (suffixData.length === 1) {
+            returnData = suffixData[0];
+        } else {
+            // 将后缀表达式转换为语法树
+            // 遇到小树 添加到 opData 遇到 符号在 opData 中提取栈尾两个元素进行运算
+            for (let index = 0; index < suffixData.length; index++) {
+                const element = suffixData[index];
+                if (type.isBinaryOperator(element.type) || 
+                    type.isType(element.type,jsKey.instanceof)) {
+                    const right = opData.pop();
+                    const left = opData.pop();
+                    opData.push(new astObj.BinaryExpression(left, element.lexeme, right));
+                } else {
+                    opData.push(element);
+                }
             }
+            returnData = opData[0];
         }
-        return opData[0];
+        // 用于判断三元表达式。
+        if (this.astI.isType(operator.conditionalOperator.questionMark)) {
+            if (type.isType(parentNode.type, astConfig.SequenceExpression)) {
+                returnData = this.conditionalAna(returnData);
+            } else {
+                returnData = this.inputConditionalAna(returnData);
+            }
+            // 用于处理逻辑表达式
+        } else if(type.isLogicalOperator(this.astI.getNowTokenType())) {
+            returnData = this.logicalAna(parentNode,returnData);
+        }
+        return returnData;
     }
     /**
      * 用于处理字符串和数字 true null false
      */
     returnLiteralAna() {
         this.astI.lengthAddOne();
-        return new astObj.Literal(this.astI.getFrontTokenLexeme());
+        const ast = new astObj.Literal(this.astI.getFrontTokenLexeme());
+        return this.getSelectorThree().run(this.astI.getNowTokenType(), [ast]);;
     }
     /**
      * 返回一个 Identifier 对象
@@ -850,30 +975,38 @@ module.exports = class {
         type.characterString,
         jsKey.true,
         jsKey.false,
-        jsKey.null
+        jsKey.null,
+        type.regular
         ], "returnLiteralAna")
     }
     /**
      * 用于选择需要用 expressionAna 分析器分析的类型
      */
     selectExpressionArray() {
-        return [ 
+        return [
+            brackets.parentheses.leftParentheses,
+            brackets.middlebrackets.leftMiddlebrackets,
             type.variableName,
             type.number,
             type.characterString,
-            operator.binaryOperator.add,
-            operator.binaryOperator.reduce,
+            type.regular,
             jsKey.false,
             jsKey.undefined,
             jsKey.null,
-            brackets.parentheses.leftParentheses
+            jsKey.this,
+            jsKey.new,
+            jsKey.typeof,
+            operator.unaryOperator.inverse,
+            operator.unaryOperator.logicInverse,
+            operator.binaryOperator.add,
+            operator.binaryOperator.reduce
         ];
     }
     /**
      * 正负号处理
      * @param {父类型} parentNode 
      */
-    positiveAndNegativeAna(parentNode){
+    unaryAna(parentNode){
         const frontType = this.astI.getFrontTokenType();
         let ast = undefined;
         
@@ -893,9 +1026,12 @@ module.exports = class {
                 const select = new selector(this);
                  select.push([type.number, type.characterString], "numberAndStringAna").
                     push(type.variableName,"variableNameAna").
+                    push(brackets.parentheses.leftParentheses,"expressionAna").
+                    push(brackets.braces.leftBraces,"objectAna").
                     push([operator.binaryOperator.add, 
-                        operator.binaryOperator.reduce],"positiveAndNegativeAna").
-                     push(jsKey.function,"functionAna");
+                        operator.binaryOperator.reduce],"unaryAna").
+                    push([jsKey.function,jsKey["function*"]],"functionAna").
+                    push(jsKey.new,"newAna");
 
                 ast.argument = this.selectLiteral(select).
                     run(this.astI.getNowTokenType(), [ast]);
@@ -935,6 +1071,274 @@ module.exports = class {
         }
         this.astI.lengthAddOne();
         ast.argument = this.expressionAna(parentNode);
+        return ast;
+    }
+    /**
+     * 用于分析 this
+     * @param {父节点} parentNode
+     */
+    thisAna(parentNode) {
+        // 构建选择器 用于分类处理
+        const select = new selector(this);
+        // 当后面跟着 .
+        return select.push(operator.memberOperator.spot, "objMemberAna").
+            // 当后面跟着 [
+            push(brackets.middlebrackets.leftMiddlebrackets, "arrMemberAna").
+            // 当后面跟着 (
+            push(brackets.parentheses.leftParentheses, "callAna").
+
+            pushDefaultRun(() => {
+                this.astI.lengthAddOne();
+                return new astObj.ThisExpression();
+            }).
+            // 其他
+            run(this.astI.getBehindTokenType(), [parentNode]);
+    }
+    /**
+     * 用于判断node后是否跟着,号 如果跟着,调用 sequenceAna 处理
+     * @param {节点} node 
+     */
+    isSequenceAna(node){
+        if (this.astI.isType(operator.sequenceOperator.comma)) {
+            node = this.inputSequenceAna(node);
+        }
+        return node;
+    }
+    /**
+     * 第四个选择器用于关键字处理
+     * @param {父节点} parentNode 
+     */
+    getSelectorFour(parentNode){
+        const select = this.getSelectorOne(parentNode, []);
+        return select.push([jsKey.function,jsKey["function*"]], () => {
+                this.error.syntaxError();
+            }).push(brackets.parentheses.rightParentheses, () => {
+                this.error.tokenAddOneAndUndefinedError();
+            }).push(type.semicolon, "emptyAna").
+            push([jsKey.break,jsKey.continue],"breakAndContinueAna").
+            pushDefaultRun(() => {
+                this.error.syntaxError();
+            });
+    }
+    /**
+     * 用于分析if语句
+     * @param {父节点} parentNode 
+     */
+    ifAna(parentNode) {
+        const ast = new astObj.IfStatement();
+        const select = this.getSelectorFour(ast);
+        
+        this.error.tokenAddOneAndUndefinedError();
+        this.error.nowTokenTypeError(brackets.parentheses.leftParentheses);
+        this.error.tokenAddOneAndUndefinedError();
+        ast.test = this.isSequenceAna(this.expressionAna(ast));
+        if (this.astI.isType(brackets.parentheses.rightParentheses)) {
+            this.error.tokenAddOneAndUndefinedError();
+        }
+        ast.consequent = this.isSequenceAna(select.run(this.astI.getNowTokenType()));
+        
+        if(this.astI.isType(jsKey.else)) {
+            this.error.tokenAddOneAndUndefinedError();
+            if(this.astI.isType(brackets.braces.leftBraces)) {
+                ast.alternate = this.blockAna(ast);
+            } else if(this.astI.isType(jsKey.if)){
+                ast.alternate = this.ifAna(ast);
+            } else {
+                ast.alternate = this.isSequenceAna(select.run(this.astI.getNowTokenType()));
+            }
+        }
+        return ast;
+    }
+    /**
+     * 空语句
+     */
+    emptyAna(){
+        this.astI.lengthAddOne();
+        return new astObj.EmptyStatement();
+    }
+    /**
+     * 关键字 new 处理
+     * @param {父节点} parentNode 
+     */
+    newAna(parentNode){
+        const ast = new astObj.NewExpression();
+        this.error.tokenAddOneAndUndefinedError();
+        const select =new selector(this);
+
+        this.selectLiteral(select).
+            push(jsKey.undefined,"returnIdentifierAna").
+            push(type.variableName,"variableNameAna").
+            push(brackets.middlebrackets.leftMiddlebrackets,"arrayAna").
+            push(brackets.parentheses.leftParentheses,"expressionAna",()=>{
+                this.astI.lengthAddOne();
+            }).push(brackets.braces.leftBraces,"objectAna").
+            push([jsKey.function,jsKey["function*"]], "functionAna").
+            pushDefaultRun(()=>{
+                this.error.syntaxError();
+            });
+
+        const data = select.run(this.astI.getNowTokenType(),[ast]);
+        ast.callee = data;
+        if(type.isType(data.type, astConfig.CallExpression)) {
+            ast.arguments = data.arguments;
+            ast.callee = data.callee;
+        }
+        return ast;
+    }
+    /**
+     * while 处理
+     * @param {父节点} parentNode 
+     */
+    whileAna(parentNode) {
+        const ast = new astObj.WhileStatement();
+        const select = this.getSelectorFour(ast);
+        this.error.tokenAddOneAndUndefinedError();
+        this.error.nowTokenTypeError(brackets.parentheses.leftParentheses);
+        this.error.tokenAddOneAndUndefinedError();
+        ast.test = this.isSequenceAna(this.expressionAna(ast));
+        if(this.astI.isType(brackets.parentheses.rightParentheses)) {
+            this.error.tokenAddOneAndUndefinedError();
+        }
+        ast.body = this.isSequenceAna(select.run(this.astI.getNowTokenType(),[ast]));
+        return ast;
+    }
+    
+    /**
+     * 用于分析 do while 语句
+     * @param {父节点} parentNode 
+     */
+    doWhileAna(parentNode){
+        const ast = new astObj.DoWhileStatement();
+        const select = this.getSelectorFour(ast);
+        this.error.tokenAddOneAndUndefinedError();
+        ast.body = this.isSequenceAna(select.run(this.astI.getNowTokenType(), [ast]));
+        this.error.nowTokenTypeError(jsKey.while);
+        this.error.tokenAddOneAndUndefinedError();
+        this.error.nowTokenTypeError(brackets.parentheses.leftParentheses);
+        this.error.tokenAddOneAndUndefinedError();
+        ast.test = this.isSequenceAna(this.expressionAna(ast));
+
+        if (this.astI.isType(brackets.parentheses.rightParentheses)) {
+            this.error.tokenAddOneAndUndefinedError();
+        }
+        return ast;
+    }
+    /**
+     * break和continue分析
+     */
+    breakAndContinueAna(){
+        let ast = new astObj.ContinueStatement();
+        if(this.astI.isType(jsKey.break)) {
+            ast = new astObj.BreakStatement();
+        }
+        if (type.isType(this.astI.getBehindOneTokenType(),type.variableName)) {
+            this.astI.lengthAddOne();
+            ast.label = this.returnIdentifierAna();
+            return ast;
+        } 
+        this.astI.lengthAddOne();
+        return ast;
+    }
+
+    /**
+     * 用于处理 for 语句
+     * @param {父节点} parentNode 
+     */
+    forAna(parentNode){
+        let paramOne = null;
+        let paramTwo = null;
+        let ast = new astObj.ForStatement();
+        const select = this.getSelectorFour(ast);
+        // 初始化分析器当遇到 { 时为对象分析器
+        select.push(brackets.braces.leftBraces,"objectAna");
+
+        this.error.tokenAddOneAndUndefinedError();
+        this.error.nowTokenTypeError(brackets.parentheses.leftParentheses);
+        this.error.tokenAddOneAndUndefinedError();
+        if (!this.astI.isType(type.semicolon)) 
+            paramOne = this.isSequenceAna(select.run(this.astI.getNowTokenType(), [ast]));
+        // 用于选着合适的for分析对象
+        if(this.astI.isType(jsKey.in)) ast = new astObj.ForInStatement();
+        if(this.astI.isType(jsKey.of)) ast = new astObj.ForOfStatement();
+        if (!type.isType(ast.type, astConfig.ForStatement) && 
+            (!paramOne || !type.isType(paramOne.type,[astConfig.VariableDeclaration, astConfig.Identifier]))) {
+            this.error.syntaxError();
+        }
+        this.astI.lengthAddOne();
+        if (!this.astI.isType(type.semicolon))
+            paramTwo = this.isSequenceAna(select.run(this.astI.getNowTokenType(), [ast]));
+        // 当后面的数据是 ; 向后平移
+        if (this.astI.isType(type.semicolon)) {
+            this.error.tokenAddOneAndUndefinedError();
+        }
+        if(type.isType(ast.type,astConfig.ForStatement)) {
+            ast.init = paramOne;
+            ast.test = paramTwo;
+            if (!this.astI.isType(brackets.parentheses.rightParentheses))
+                ast.update = this.isSequenceAna(select.run(this.astI.getNowTokenType(), [ast]));
+        } else {
+            ast.left = paramOne;
+            ast.right = paramTwo;
+        }
+        // 当后面的数据是 ) 向后平移
+        if (this.astI.isType(brackets.parentheses.rightParentheses)) {
+            this.error.tokenAddOneAndUndefinedError();
+        }
+        // 最后当遇到 { 调整分析器为块分析器
+        select.push(brackets.braces.leftBraces, "blockAna");
+        ast.body = this.isSequenceAna(select.run(this.astI.getNowTokenType(), [ast]));
+        return ast;
+    }
+    /**
+     * 用于处理 switch 语句
+     * @param {父节点} parentNode 
+     */
+    switchAna(parentNode){
+        const ast = new astObj.SwitchStatement();
+        const select = this.getSelectorOne(ast, []);
+        select.push(type.semicolon,"emptyAna")
+        /**
+         * 用于处理 case 下面的语句
+         */
+        const consequentAna = ()=>{
+            const consequents = [];
+            
+            while ( !this.astI.isType([jsKey.case,jsKey.default,brackets.braces.rightBraces])) {
+                consequents.push(this.isSequenceAna(select.run(this.astI.getNowTokenType(), [ast])));
+                if (this.astI.isType(type.semicolon)) this.astI.lengthAddOne();
+            }
+            return consequents;
+        }
+        /**
+         * 用于处理switch 中的 case
+         */
+        const caseAna = ()=>{
+            const cases = [];
+            while( !this.astI.isType(brackets.braces.rightBraces) ) {
+                if (this.astI.isType([jsKey.case,jsKey.default])) {
+                    const tree = new astObj.SwitchCase();
+                    this.error.tokenAddOneAndUndefinedError();
+                    if (type.isType(this.astI.getFrontTokenType(), jsKey.case)) {
+                        tree.test = this.isSequenceAna(this.expressionAna(ast));
+                    }
+                    this.error.tokenAddOneAndUndefinedError();
+                    tree.consequent = consequentAna();
+                    cases.push(tree);
+                } else {
+                    this.error.syntaxError();
+                }
+            }
+            return cases;
+        }
+        this.error.tokenAddOneAndUndefinedError();
+        this.error.nowTokenTypeError(brackets.parentheses.leftParentheses);
+        this.error.tokenAddOneAndUndefinedError();
+        ast.test = this.isSequenceAna(this.expressionAna(ast));
+        this.error.tokenAddOneAndUndefinedError();
+        this.error.nowTokenTypeError(brackets.braces.leftBraces);
+        this.error.tokenAddOneAndUndefinedError();
+        ast.cases = caseAna(ast);
+        this.astI.lengthAddOne();
         return ast;
     }
 }

@@ -6,12 +6,12 @@ module.exports = {
      * @param {类型一} type1 
      * @param {类型二 可以是数组} type2 
      */
-    isType(type1,type2){
-        if(type2 instanceof Array) {
+    isType(type1, type2) {
+        if (type2 instanceof Array) {
             for (let index = 0; index < type2.length; index++) {
-                if(type1 === type2[index]) {
+                if (type1 === type2[index]) {
                     return true;
-                }                
+                }
             }
             return false;
         }
@@ -22,8 +22,8 @@ module.exports = {
      * @param {类型} type 
      * @param {父类} parent 
      */
-    isParent (type, parent){
-        return parent[type] ? true: false;
+    isParent(type, parent) {
+        return parent[type] ? true : false;
     },
     /**
      * 判断type是否是super的子孙类
@@ -32,12 +32,12 @@ module.exports = {
      */
     isAncestor(type, ancestor) {
         let is = this.isParent(type, ancestor);
-        if(!is) {
+        if (!is) {
             for (const key in ancestor) {
                 if (ancestor.hasOwnProperty(key)) {
                     const element = ancestor[key];
                     is = this.isParent(type, element);
-                    if(is) break;
+                    if (is) break;
                 }
             }
         }
@@ -47,42 +47,42 @@ module.exports = {
      * 二元运算符
      * @param {类型} type 
      */
-    isBinaryOperator(type) {        
-        return this.isParent(type,this.operator.binaryOperator);
+    isBinaryOperator(type) {
+        return this.isParent(type, this.operator.binaryOperator);
     },
     /**
      * 更新运算符
      * @param {类型} type 
      */
-    isUpdateOperator (type) {
+    isUpdateOperator(type) {
         return this.isParent(type, this.operator.updateOperator);
     },
     /**
      * 赋值运算符
      * @param {类型} type 
      */
-    isAssignmentOperator (type) {
+    isAssignmentOperator(type) {
         return this.isParent(type, this.operator.assignmentOperator);
     },
     /**
      * 条件运算符
      * @param {类型} type 
      */
-    isConditionalOperator (type) {
+    isConditionalOperator(type) {
         return this.isParent(type, this.operator.conditionalOperator);
     },
     /**
      * 成员运算符
      * @param {类型} type 
      */
-    isMemberOperator (type) {
+    isMemberOperator(type) {
         return this.isParent(type, this.operator.memberOperator);
     },
     /**
      * 序列运算符
      * @param {类型} type
      */
-    isSequenceOperator (type) {
+    isSequenceOperator(type) {
         return this.isParent(type, this.operator.sequenceOperator);
     },
     /**
@@ -96,22 +96,22 @@ module.exports = {
      * 单目运算符
      * @param {类型} type 
      */
-    isUnaryOperator (type) {
+    isUnaryOperator(type) {
         return this.isParent(type, this.operator.unaryOperator);
     },
     /**
      * 是等于符号
      * @param {类型} type 
      */
-    isEqual(type){
+    isEqual(type) {
         return type === this.operator.assignmentOperator.equal;
     },
     /**
      * 返回所有运算符
      */
-    getAllOperator () {
+    getAllOperator() {
         const operator = {};
-        for (const operatorParent  in this.operator) {
+        for (const operatorParent in this.operator) {
             Object.assign(operator, this.operator[operatorParent]);
         }
         return operator;
@@ -120,18 +120,18 @@ module.exports = {
      * 返回类型的权限
      * @param {类型} type 
      */
-    getPriority(type){
+    getPriority(type) {
         const select = new selector(this);
         return select.push([
             this.brackets.parentheses.leftParentheses,
             this.brackets.parentheses.rightParentheses,
-        ],() =>  18).push([
+        ], () => 18).push([
             this.operator.memberOperator.spot,
             this.brackets.middlebrackets.leftMiddlebrackets,
             this.brackets.middlebrackets.rightMiddlebrackets,
             this.operator.memberOperator.optionalChaining,
             this.jsKey.new
-        ],() => 17).push([
+        ], () => 17).push([
             this.operator.updateOperator.addOne,
             this.operator.updateOperator.reduceOne,
             this.jsKey.delete,
@@ -141,13 +141,13 @@ module.exports = {
             this.jsKey.void,
             this.operator.unaryOperator.logicInverse,
             this.operator.unaryOperator.inverse
-        ],() => 16).push([
+        ], () => 16).push([
             this.operator.binaryOperator.involution
         ]).push([
             this.operator.binaryOperator.ride,
             this.operator.binaryOperator.except,
             this.operator.binaryOperator.remainder
-        ],()=> 15).push([
+        ], () => 15).push([
             this.operator.binaryOperator.add,
             this.operator.binaryOperator.reduce
         ], () => 14).push([
@@ -201,19 +201,19 @@ module.exports = {
             this.operator.sequenceOperator.comma
         ], () => 1).run(type);
     },
-    lineFeed:"lineFeed",
+    lineFeed: "lineFeed",
     // 数字类型
-    number:"number",
+    number: "number",
     // 字符串
     characterString: "characterString",
     // 变量名字
     variableName: "variableName",
     // 单行注解
-    singleLineComment: "singleLineComments",
+    singleLineComment: "singleLineComment",
     // 多行注解
     multilineComment: "multilineComment",
     // 正则表达式
-    regular:"regular",
+    regular: "regular",
     // 运算符
     operator: {
 
@@ -265,7 +265,7 @@ module.exports = {
             // --
             reduceOne: "reduceOne",
         },
-        assignmentOperator:{
+        assignmentOperator: {
             // =
             equal: "equal",
             // +=
@@ -285,38 +285,38 @@ module.exports = {
             // <<=
             leftShiftEqual: "leftShiftEqual",
             // &=
-            andEqual:"andEqual",
+            andEqual: "andEqual",
             // |=
-            orEqual:"orEqual",
+            orEqual: "orEqual",
             // ^=
-            xorEqual:"xorEqual"
+            xorEqual: "xorEqual"
         },
-        conditionalOperator:{
+        conditionalOperator: {
             // ? 
             questionMark: "questionMark",
             // :
-            colon:"colon"
+            colon: "colon"
         },
-        memberOperator:{
+        memberOperator: {
             // .
             spot: "spot",
             // ?.
-            optionalChaining:"optionalChaining"
+            optionalChaining: "optionalChaining"
         },
-        unaryOperator:{
+        unaryOperator: {
             // !
             logicInverse: "logicInverse",
             // ~
             inverse: "inverse"
         },
-        logicalOperator:{
+        logicalOperator: {
             // &&
             logicAnd: "logicAnd",
             // ||
             logicOr: "logicOr"
-            
+
         },
-        sequenceOperator:{
+        sequenceOperator: {
             // ,
             comma: "comma"
         },
@@ -351,14 +351,9 @@ module.exports = {
         }
     },
     jsKey: {
-        abstract: "abstract",
-        arguments: "arguments",
-        boolean: "boolean",
         break: "break",
-        byte: "byte",
         case: "case",
         catch: "catch",
-        char: "char",
         class: "class",
         const: "const",
         continue: "continue",
@@ -366,30 +361,24 @@ module.exports = {
         default: "default",
         delete: "delete",
         do: "do",
-        double: "double",
         else: "else",
         enum: "enum",
-        eval: "eval",
         export: "export",
         extends: "extends",
         false: "false",
-        final: "final",
         finally: "finally",
-        float: "float",
         for: "for",
         function: "function",
         "function*": "function*",
-        goto: "goto",
         if: "if",
         implements: "implements",
         import: "import",
         in: "in",
         instanceof: "instanceof",
-        int: "int",
+        of: "of",
         interface: "interface",
         let: "let",
         long: "long",
-        native: "native",
         new: "new",
         null: "null",
         package: "package",
@@ -397,25 +386,21 @@ module.exports = {
         protected: "protected",
         public: "public",
         return: "return",
-        short: "short",
         static: "static",
         super: "super",
         switch: "switch",
-        synchronized: "synchronized",
         this: "this",
         throw: "throw",
         throws: "throws",
-        transient: "transient",
         true: "true",
         try: "try",
         typeof: "typeof",
         var: "var",
         void: "void",
-        volatile: "volatile",
         while: "while",
         with: "with",
         yield: "yield",
         "yield*": "yield*",
-        await:"await"
+        await: "await"
     }
 }

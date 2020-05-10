@@ -1,9 +1,9 @@
 const config = require("../config");
-const Identifier = require("./Identifier");
 module.exports = class FunctionDeclaration {
-    constructor(name) {
+    constructor() {
         this.type = config.FunctionDeclaration;
-        this.id = new Identifier(name);
+        this.id = null;
+        this.generator = false;
         this.params = [];
         this.body = null;
     }

@@ -1,10 +1,10 @@
 const config = require("../config");
-const Identifier = require("./Identifier");
 module.exports =class FunctionExpression {
-    constructor(name, params) {
-        this.id = name ? new Identifier(name) : null;
+    constructor() {
+        this.id =null;
         this.type = config.FunctionExpression;
-        this.params = params;
+        this.generator = false;
+        this.params = [];
         this.body = null;
     }
 }

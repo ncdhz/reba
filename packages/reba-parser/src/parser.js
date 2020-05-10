@@ -11,9 +11,7 @@ function getAST(tokenFile, sourceType) {
     
     while(astI.getNowToken()) {
         const data = select.run(astI.getNowTokenType(), [ast]);
-        
         if (data) astBody.push(data);
-        
         astI.newFirstToken();
     }
     return astI.ast;
