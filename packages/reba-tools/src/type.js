@@ -378,7 +378,6 @@ module.exports = {
         of: "of",
         interface: "interface",
         let: "let",
-        long: "long",
         new: "new",
         null: "null",
         package: "package",
@@ -391,7 +390,6 @@ module.exports = {
         switch: "switch",
         this: "this",
         throw: "throw",
-        throws: "throws",
         true: "true",
         try: "try",
         typeof: "typeof",
@@ -401,6 +399,10 @@ module.exports = {
         with: "with",
         yield: "yield",
         "yield*": "yield*",
-        await: "await"
+        await: "await",
+        async: "async",
+        undefined:"undefined",
+        as:"as",
+        from:"from"
     }
 }

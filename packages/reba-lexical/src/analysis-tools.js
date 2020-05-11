@@ -465,6 +465,7 @@ module.exports = class {
         let stringType = jsKey[stringOne];
         if (typeof stringType === "function") stringType = type.variableName;
         if (!stringType) stringType = type.variableName;
+        this.codeInformation.trim();
         if (this.codeInformation.getNowChar() === "*") {
             if (type.isType(stringType, jsKey.function)) {
                 stringType = jsKey["function*"];

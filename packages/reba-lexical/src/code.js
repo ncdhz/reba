@@ -44,4 +44,12 @@ module.exports = class {
     setToken(start,end,type,lexeme){
         this.tokens.push(new token(start, end, type,lexeme, this.row));
     }
+    /** 
+     * 清除空格直到遇到非空格元素 
+     */
+    trim(){
+        while(this.getNowChar() === ' ') {
+            this.codeStartLength ++;
+        }
+    }
 }

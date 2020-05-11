@@ -6,6 +6,7 @@ module.exports = class FunctionDeclaration {
         this.generator = false;
         this.params = [];
         this.body = null;
+        this.async = false;
     }
 
 }

@@ -4,10 +4,26 @@ module.exports = class{
         this.astInformation = astI;
     }
     
-    syntaxErrorAna(row, lexeme, filename){
+    syntaxErrorAna(row, lexeme, filename, describe = undefined){
+        const d = describe ? describe : '';
+
         throw new Error("syntax error : { "+ (filename === ''?"source code ":"file name: [ "+
         filename+" ] ")+ "row:[ " + row + 
-            " ]  lexeme: [ " + lexeme  +" ] }");
+            " ]  lexeme: [ " + lexeme  +" ] "+d+"}");
+    }
+    syntaxErrorDefaultAna(describe = undefined) {
+        if (this.astInformation.getNowTokenRow())
+            this.syntaxErrorAna(this.astInformation.getNowTokenRow(),
+                this.astInformation.getNowTokenLexeme(),
+                this.astInformation.getFileName(), describe);
+        else
+            this.syntaxErrorAna(this.astInformation.getFrontTokenRow(),
+                this.astInformation.getFrontTokenLexeme(),
+                this.astInformation.getFileName(), describe);
+    }
+
+    reservedError(){
+        this.syntaxErrorDefaultAna("The keyword '"+this.astInformation.getNowTokenType()+"' is reserved ")
     }
 
     /**
@@ -16,14 +32,7 @@ module.exports = class{
     * 如果当前token为 undefined 则返回上一个 token 所在未知的语法错误
     */
     syntaxError() {
-        if (this.astInformation.getNowTokenRow())
-            this.syntaxErrorAna(this.astInformation.getNowTokenRow(),
-                this.astInformation.getNowTokenLexeme(),
-                this.astInformation.getFileName());
-        else
-            this.syntaxErrorAna(this.astInformation.getFrontTokenRow(),
-                this.astInformation.getFrontTokenLexeme(),
-                this.astInformation.getFileName());
+        this.syntaxErrorDefaultAna(undefined);
     }
     /**
      * 用于处理返回值是 undefined 错误

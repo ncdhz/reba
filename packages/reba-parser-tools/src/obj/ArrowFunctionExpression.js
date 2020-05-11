@@ -6,5 +6,6 @@ module.exports =class ArrowFunctionExpression {
         this.params = [];
         this.type = config.ArrowFunctionExpression;
         this.body = null;
+        this.async = false;
     }
 }

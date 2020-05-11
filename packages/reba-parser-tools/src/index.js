@@ -42,6 +42,23 @@ const ForOfStatement = require("./obj/ForOfStatement");
 const ForInStatement = require("./obj/ForInStatement");
 const SwitchStatement = require("./obj/SwitchStatement");
 const SwitchCase = require("./obj/SwitchCase");
+const YieldExpression = require("./obj/YieldExpression");
+const WithStatement = require("./obj/WithStatement");
+const AsyncStatement = require("./obj/AsyncStatement");
+const AwaitExpression = require("./obj/AwaitExpression");
+const DebuggerStatement = require("./obj/DebuggerStatement");
+const ThrowStatement = require("./obj/ThrowStatement");
+const TryStatement = require("./obj/TryStatement");
+const CatchClause = require("./obj/CatchClause");
+const ClassDeclaration = require("./obj/ClassDeclaration");
+const ClassExpression = require("./obj/ClassExpression");
+const ClassBody = require("./obj/ClassBody");
+const MethodDefinition = require("./obj/MethodDefinition");
+const Super = require("./obj/Super");
+const ExportNamedDeclaration = require("./obj/ExportNamedDeclaration");
+const ExportSpecifier = require("./obj/ExportSpecifier");
+const ExportDefaultDeclaration = require("./obj/ExportDefaultDeclaration");
+const ExportAllDeclaration = require("./obj/ExportAllDeclaration");
 
 module.exports={
     config,
@@ -86,5 +103,22 @@ module.exports={
     ForInStatement,
     ForOfStatement,
     SwitchStatement,
-    SwitchCase
+    SwitchCase,
+    YieldExpression,
+    WithStatement,
+    AsyncStatement,
+    AwaitExpression,
+    DebuggerStatement,
+    ThrowStatement,
+    TryStatement,
+    CatchClause,
+    ClassExpression,
+    ClassDeclaration,
+    ClassBody,
+    MethodDefinition,
+    Super,
+    ExportNamedDeclaration,
+    ExportSpecifier,
+    ExportDefaultDeclaration,
+    ExportAllDeclaration
 }
