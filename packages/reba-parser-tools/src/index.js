@@ -59,6 +59,10 @@ const ExportNamedDeclaration = require("./obj/ExportNamedDeclaration");
 const ExportSpecifier = require("./obj/ExportSpecifier");
 const ExportDefaultDeclaration = require("./obj/ExportDefaultDeclaration");
 const ExportAllDeclaration = require("./obj/ExportAllDeclaration");
+const ImportDeclaration = require("./obj/ImportDeclaration");
+const ImportDefaultSpecifier = require("./obj/ImportDefaultSpecifier");
+const ImportSpecifier = require("./obj/ImportSpecifier");
+const ImportNamespaceSpecifier = require("./obj/ImportNamespaceSpecifier");
 
 module.exports={
     config,
@@ -120,5 +124,9 @@ module.exports={
     ExportNamedDeclaration,
     ExportSpecifier,
     ExportDefaultDeclaration,
-    ExportAllDeclaration
+    ExportAllDeclaration,
+    ImportDeclaration,
+    ImportDefaultSpecifier,
+    ImportSpecifier,
+    ImportNamespaceSpecifier
 }

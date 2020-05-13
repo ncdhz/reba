@@ -216,6 +216,6 @@ module.exports = class {
 
         return returnData.length === 1 ? 
         returnData[0]:returnData.length === 0 
-        ? undefined : returnData;
+        ? null : returnData;
     }
 }

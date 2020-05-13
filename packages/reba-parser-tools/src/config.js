@@ -117,5 +117,13 @@ module.exports = {
     // 默认 export
     ExportDefaultDeclaration:"ExportDefaultDeclaration",
     // export 所有
-    ExportAllDeclaration:"ExportAllDeclaration"
+    ExportAllDeclaration:"ExportAllDeclaration",
+    // import 声明
+    ImportDeclaration:"ImportDeclaration",
+    // import 默认说明
+    ImportDefaultSpecifier:"ImportDefaultSpecifier",
+    // import 声明
+    ImportSpecifier:"ImportSpecifier",
+    // import 命名空间说明符
+    ImportNamespaceSpecifier:"ImportNamespaceSpecifier"
 }

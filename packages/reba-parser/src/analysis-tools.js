@@ -113,7 +113,9 @@ module.exports = class {
             push(brackets.middlebrackets.leftMiddlebrackets, "arrMemberAna").
             // 当后面跟着 (
             push(brackets.parentheses.leftParentheses, "callAna").
-            push(type.arrowFunction, "arrowFunctionAna").
+            push(type.arrowFunction, ()=>{
+                return this.arrowFunctionAna(parentNode,this.returnIdentifierAna());
+            }).
             // 其他
             pushDefaultRun(defaultAna).
             run(this.astI.getBehindTokenType(), [parentNode]);
@@ -188,8 +190,6 @@ module.exports = class {
                     expressions[index] = spreadToRest(element);
                 }
                 ast.params = expressions;
-            } else if (!this.astI.isType(type.arrowFunction)) {
-                ast.params.push(this.returnIdentifierAna());
             } else {
                 let element = formatParam(node);
                 element = spreadToRest(element);
@@ -197,9 +197,7 @@ module.exports = class {
             }
         }
 
-
         this.astI.lengthAddOne();
-
         if (this.astI.isType(brackets.braces.leftBraces)) {
             ast.body = this.blockAna(ast);
         } else {
@@ -702,6 +700,7 @@ module.exports = class {
             push(jsKey.try, "tryAna").
             push(jsKey.super, "superAna").
             push(jsKey.export, "exportAna").
+            push(jsKey.import, "importAna").
             push(jsKey.async, "asyncAna").
             push(jsKey.debugger, "debuggerAna").
             push(jsKey.switch, "switchAna").
@@ -863,7 +862,11 @@ module.exports = class {
             if (member()) {
                 return this.objMemberAna(suffixData.pop());
             }
-        }).pushDefaultRun(() => {
+        }).pushAfter((ast) => {
+            // 当选择器处理数据不为空时添加数据到 suffixData
+            if (ast[0]) {
+                suffixData.push(ast[0]);
+            }
             /**
             * 用于处理 opData中的符号
             * 当现在获取的符号优先级小于等于 opData 顶上的符号时 弹出 opData 中的符号到suffixData中
@@ -894,7 +897,7 @@ module.exports = class {
         });
 
         const opAna = (ast) => {
-
+            
             if (goOut) return;
 
             if (ast.length > 0) suffixData.push(ast[0]);
@@ -905,19 +908,14 @@ module.exports = class {
                 goOut = true;
                 return;
             }
-            const data = select1.run(this.astI.getNowTokenType());
-            // 当选择器处理数据不为空时添加数据到 suffixData
-            if (data) {
-                suffixData.push(data);
-                return;
-            }
+            select1.run(this.astI.getNowTokenType());
         }
         /**
          * 用于构建表达式选择器
          */
         const select = new selector(this);
-
-        this.selectLiteral(select).push(type.variableName, "variableNameAna").push([
+        
+        this.selectLiteral(select).push([type.variableName,jsKey.import], "variableNameAna").push([
             // 用于处理 ++ --
             operator.updateOperator.addOne,
             operator.updateOperator.reduceOne
@@ -1130,7 +1128,8 @@ module.exports = class {
             push(jsKey.new, "newAna").
             push(jsKey.this, "thisAna").
             push(jsKey.await, "awaitAna").
-            push(jsKey.async, "asyncAna");
+            push(jsKey.async, "asyncAna").
+            push(jsKey.import, "importAna");
         return select;
     }
     /**
@@ -1219,7 +1218,8 @@ module.exports = class {
         if (this.astI.isType(brackets.parentheses.rightParentheses)) {
             this.error.tokenAddOneAndUndefinedError();
         }
-        ast.consequent = this.isSequenceAna(select.run(this.astI.getNowTokenType()));
+
+        ast.consequent = this.isSequenceAna(select.run(this.astI.getNowTokenType(),[ast]));
 
         if (this.astI.isType(jsKey.else)) {
             this.error.tokenAddOneAndUndefinedError();
@@ -1686,10 +1686,7 @@ module.exports = class {
                 }
             }
             this.astI.lengthAddOne();
-            if (this.astI.isType(jsKey.from)) {
-                this.error.tokenAddOneAndUndefinedError();
-                ast.source = this.returnLiteralAna();
-            }
+            ast.source = this.fromAna();
         }).push(jsKey.default,()=>{
             ast = new astObj.ExportDefaultDeclaration();
             this.error.tokenAddOneAndUndefinedError();
@@ -1706,9 +1703,7 @@ module.exports = class {
                 this.error.nowTokenTypeError(type.variableName);
                 ast.exported = this.returnIdentifierAna();
             }
-            this.error.nowTokenTypeError(jsKey.from);
-            this.error.tokenAddOneAndUndefinedError();
-            ast.declaration = this.returnLiteralAna();
+            ast.declaration = this.fromAna();
         }).pushDefaultRun(()=>{
             this.error.syntaxError();
         });
@@ -1716,6 +1711,87 @@ module.exports = class {
         let ast = new astObj.ExportNamedDeclaration();
         this.error.tokenAddOneAndUndefinedError();
         select.run(this.astI.getNowTokenType(),[ast]);
+        return ast;
+    }
+    /**
+     * from 分析
+     */
+    fromAna(){
+        if(!this.astI.isType(jsKey.from)) {
+            return null;
+        }
+        this.error.tokenAddOneAndUndefinedError();
+        this.error.nowTokenTypeError(type.characterString);
+        return this.returnLiteralAna();
+    }
+    /**
+     * 分析 import
+     * @param {父节点} parentNode 
+     */
+    importAna(parentNode){
+        
+        const specifierAna = ()=>{
+            this.error.tokenAddOneAndUndefinedError();
+            const specifiers = [];
+            while(!this.astI.isType(brackets.braces.rightBraces)) {
+                const specifier = new astObj.ImportSpecifier();
+                specifiers.push(specifier);
+                specifier.imported = this.returnIdentifierAna();
+                if(this.astI.isType(jsKey.as)) {
+                    this.error.tokenAddOneAndUndefinedError();
+                    specifier.local = this.returnIdentifierAna();
+                } else {
+                    specifier.local = specifier.imported;
+                }
+                if (this.astI.isType(operator.sequenceOperator.comma)) {
+                    this.error.tokenAddOneAndUndefinedError();
+                } 
+            }
+            this.astI.lengthAddOne();
+            return specifiers;
+        }
+        const select = new selector(this);
+        select.push(type.variableName,()=>{
+            const tree = new astObj.ImportDefaultSpecifier();
+            tree.local = this.returnIdentifierAna();
+            ast.specifiers.push(tree);
+            if (this.astI.isType(operator.sequenceOperator.comma)) {
+                this.error.tokenAddOneAndUndefinedError();
+                if (this.astI.isType(brackets.braces.leftBraces)) {
+                    ast.specifiers = specifierAna();
+                } else {
+                    select.run(this.astI.getNowTokenType());
+                    return;
+                }
+            }
+            ast.source = this.fromAna();
+            if (!ast.source) this.error.syntaxError();
+        }).push(operator.binaryOperator.ride,()=>{
+            const tree = new astObj.ImportNamespaceSpecifier();
+            this.error.tokenAddOneAndUndefinedError();
+            this.error.nowTokenTypeError(jsKey.as);
+            this.error.tokenAddOneAndUndefinedError();
+            tree.local = this.returnIdentifierAna();
+            ast.specifiers.push(tree);
+            ast.source = this.fromAna();
+            if(!ast.source) this.error.syntaxError();
+        }).push(brackets.braces.leftBraces,()=>{
+            ast.specifiers = specifierAna();
+            ast.source = this.fromAna();
+            if(!ast.source) this.astI.syntaxError();
+        }).push(type.characterString,()=>{
+            ast.source=this.returnIdentifierAna();
+        }).push(brackets.parentheses.leftParentheses,()=>{
+            ast = new astObj.ExpressionStatement();
+            this.astI.lengthReduceOne();
+            ast.expression = this.isSequenceAna(this.expressionAna(ast));
+
+        }).pushDefaultRun(()=>{
+            this.error.syntaxError();
+        });
+        let ast = new astObj.ImportDeclaration();
+        this.error.tokenAddOneAndUndefinedError();
+        select.run(this.astI.getNowTokenType());
         return ast;
     }
 }   

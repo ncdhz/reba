@@ -2,7 +2,6 @@ const analysis= require("./analysis-tools");
 const astInformation = require("./ast-information");
 
 function getAST(tokenFile, sourceType) {
-
     const astI = new astInformation(tokenFile, sourceType);
     const ast = astI.ast;
     const astBody = astI.ast.body;
