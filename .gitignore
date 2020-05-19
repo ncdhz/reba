@@ -95,9 +95,7 @@ dist
 .serverless/
 .DS_Store
 ./.DS_Store
-./reba-lexical/.DS_Store
-./reba-parser/.DS_Store
-./reba-tools/.DS_Store
+package/reba-test
 # FuseBox cache
 .fusebox/
 

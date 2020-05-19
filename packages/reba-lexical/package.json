@@ -9,6 +9,7 @@
   "author": "ncdhz",
   "license": "ISC",
   "dependencies": {
-    "reba-tools": "file:../reba-tools"
+    "reba-tools": "file:../reba-tools",
+    "reba-traverser": "file:../reba-traverser"
   }
 }

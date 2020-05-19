@@ -5,6 +5,7 @@ module.exports = class{
     }
     
     syntaxErrorAna(row, lexeme, filename, describe = undefined){
+        
         const d = describe ? describe : '';
 
         throw new Error("syntax error : { "+ (filename === ''?"source code ":"file name: [ "+

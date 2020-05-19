@@ -1,4 +1,4 @@
-const selector = require("./selector");
+const selector = require("reba-traverser").selector;
 
 module.exports = {
     /**

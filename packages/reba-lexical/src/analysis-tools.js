@@ -1,5 +1,5 @@
 const rebaTools = require("reba-tools");
-
+const os = require("os");
 const type = rebaTools.type;
 // 用于操作符号类型
 const operator = type.getAllOperator();
@@ -18,9 +18,9 @@ module.exports = class {
      * 用于处理空字符
      */
     empty() {
-        if (/\n/.test(this.codeInformation.getNowChar())){
+        if (os.EOL === this.codeInformation.getNowChar()){
             this.codeInformation.setToken(this.codeInformation.codeStartLength,
-                this.codeInformation.codeStartLength,type.lineFeed,'\n');
+                this.codeInformation.codeStartLength, type.lineFeed, os.EOL);
             this.codeInformation.rowAddOne();
         }
         this.codeInformation.getTokenLengthAddOne();
@@ -459,7 +459,7 @@ module.exports = class {
         const start = this.codeInformation.codeStartLength;
         let stringOne = this.codeInformation.getTokenLengthAddOne();
         while (this.codeInformation.getNowChar() &&
-            /[a-zA-Z1-9\_\$]/.test(this.codeInformation.getNowChar())) {
+            /[a-zA-Z0-9\_\$]/.test(this.codeInformation.getNowChar())) {
             stringOne += this.codeInformation.getTokenLengthAddOne();
         }
         let stringType = jsKey[stringOne];

@@ -5,6 +5,10 @@ module.exports = class {
         this.operation = operation;
         this.data = {};
     }
+    pushOperation(operation){
+        this.operation = operation;
+        return this;
+    }
     pushBefore(before){
         this.before = before;
         return this;
@@ -21,14 +25,15 @@ module.exports = class {
      * @param {当前 name 需要执行的函数 可以直接是函数 也可以是一个数组 或者一个 字符串} runFunction
      */
     push(nameArray, runFunction = undefined, before = undefined, after = undefined) {
-        
         const data = this.data;
+        
         function pushObjtoThis(name) {
             data[name] = {};
             if (before) data[name].before = before;
             if (after) data[name].after = after;
             if (runFunction) data[name].runFunction = runFunction;
         }
+
         if (nameArray instanceof Array) {
             for (let index = 0; index < nameArray.length; index++) {
                 pushObjtoThis(nameArray[index]);
@@ -60,7 +65,11 @@ module.exports = class {
         if (defaultRun) this["defaultRun"] = defaultRun;
         return this;
     }
-
+    /**
+     * 用于运行选择器中的方法
+     * @param {要执行方法名} functionName 
+     * @param  {参数} params 
+     */
     run(functionName, ...params) {
         const that = this;
         const data = this.data;
@@ -90,27 +99,31 @@ module.exports = class {
          */
         function anaObj(funName){
             const funNameArray = funName.split(".");
-
             if (funNameArray.length === 1) {
-                if (typeof that.operation === "object") {
-                    funArr(that.operation[funName], that.operation);
-                } else if (that.operation instanceof Array) {
+                if (that.operation instanceof Array) {
                     for (let index = 0; index < that.operation.length; index++) {
-                        const element = undefined;
+                        let element = undefined;
                         if (that.operation[index].hasOwnProperty("value")) {
                             element = that.operation[index]["value"];
                         }
-                        if (element && element[funName]) {
-                            funArr(element[funName], element);
+                        if(typeof element === "object") {
+                            if (element && element[funName]) {
+                                funArr(element[funName], element);
+                            }
+                        } else if(typeof element === "function" && 
+                            that.operation[index].hasOwnProperty("name") &&
+                            that.operation[index]["name"] === funNameArray[0]){
+                            funArr(element, null);
                         }
+                        
                     }
-                    
-                }
+                } else if (typeof that.operation === "object") {
+                    funArr(that.operation[funName], that.operation);
+                }  
             } else if (funNameArray.length > 1) {
-
                 if (that.operation instanceof Array) {
                     for (let index = 0; index < that.operation.length; index++) {
-                        const element = that.operation[index];
+                        let element = that.operation[index];
                         if (element.hasOwnProperty("name") && element["name"] === funNameArray[0]) {
                             if (element.hasOwnProperty("value")) {
                                 runObj(funNameArray, element["value"]);
@@ -129,7 +142,6 @@ module.exports = class {
          */
         function stringRun(funName){
             const  funNameArray = funName.split(",");
-
             for (let index = 0; index < funNameArray.length; index++) {
                 anaObj(funNameArray[index]);
             }

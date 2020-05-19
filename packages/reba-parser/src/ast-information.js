@@ -6,7 +6,7 @@ module.exports = class {
         
         this.tokens = tokenFile.tokens;
         // 当前touken的名字
-        this.fileName = tokenFile.fileName;
+        this.filePath = tokenFile.filePath;
         // 获取第一个token
         this.firstToken = this.tokens[0];
         // 用于存储当前遍历到了那个token
@@ -67,10 +67,17 @@ module.exports = class {
         return type.isType(this.getNowTokenType(),t);
     }
     /**
+     * 删除右小括号
+     */
+    removeRightParentheses(){
+        for(;this.isType(type.brackets.parentheses.rightParentheses); this.lengthAddOne());
+    }
+    /**
      * 获取当前文件名
      */
     getFileName() {
-        return this.fileName;
+        
+        return this.filePath;
     }   
     /**
      * 获取当前token的类型 当token不为空时 返回当前类型

@@ -4,5 +4,7 @@ module.exports = class Property{
         this.type = config.Property;
         this.key = null;
         this.value = null;
+        this.method = false;
+        this.shorthand = false;
     }
 }

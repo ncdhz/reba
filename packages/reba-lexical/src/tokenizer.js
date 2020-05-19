@@ -1,5 +1,5 @@
 const analysis = require('./analysis-tools')
-const selector = require("reba-tools").selector;
+const selector = require("reba-traverser").selector;
 
 const code = require('./code')
 /**

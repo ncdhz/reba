@@ -1,7 +1,5 @@
 module.exports = {
     Program: "Program",
-    // 方法
-    Function: "Function",
     // 变量声明
     VariableDeclaration: "VariableDeclaration",
     // 表达式语句

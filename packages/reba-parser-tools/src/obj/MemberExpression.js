@@ -1,9 +1,10 @@
 const config = require("../config");
 module.exports = class MemberExpression {
 
-    constructor(property, object) {
-        this.object = object;
+    constructor() {
+        this.object = null;
         this.type = config.MemberExpression;
-        this.property = property;
+        this.property = null;
+        this.computed = false;
     }
 }

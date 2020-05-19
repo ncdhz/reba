@@ -1,7 +1,7 @@
 class tokenInformation{
 
-    constructor(fileName, tokens) {
-        this.fileName = fileName;
+    constructor(filePath, tokens) {
+        this.filePath = filePath;
         this.tokens = tokens;
     }
     
@@ -18,8 +18,8 @@ module.exports =  class {
        return this; 
     }
 
-    push(fileName, tokens){
-        this.tokenInformations.push(new tokenInformation(fileName,tokens));
+    push(filePath, tokens){
+        this.tokenInformations.push(new tokenInformation(filePath,tokens));
         return this;
     }
 }
