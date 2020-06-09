@@ -10,6 +10,6 @@
   "author": "ncdhz",
   "license": "ISC",
   "dependencies": {
-    "reba-cli": "^1.0.0"
+    "reba-cli": "file:../reba-cli"
   }
 }

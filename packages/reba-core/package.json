@@ -8,10 +8,10 @@
   "author": "ncdhz",
   "license": "ISC",
   "dependencies": {
-    "reba-generator": "^1.0.0",
+    "reba-generator": "^1.0.1",
     "reba-lexical": "^1.0.0",
     "reba-parser": "^1.0.0",
-    "reba-preset-env": "^1.0.0"
+    "reba-preset-env": "^1.0.1"
   },
   "devDependencies": {},
   "repository": {

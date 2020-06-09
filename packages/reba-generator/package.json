@@ -1,6 +1,6 @@
 {
   "name": "reba-generator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,7 +11,7 @@
     "reba-parser": "^1.0.0",
     "reba-parser-tools": "^1.0.0",
     "reba-tools": "^1.0.0",
-    "reba-traverser": "^1.0.0"
+    "reba-traverser": "^1.0.1"
   },
   "directories": {
     "lib": "lib"

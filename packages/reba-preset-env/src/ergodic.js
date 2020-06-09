@@ -1,5 +1,5 @@
-const selector = require("./selector");
-const traverser = require("./traverser");
+const selector = require("reba-traverser").selector;
+const rebaConfig = require("reba-parser-tools").config;
 class pluginParams {
     /**
      * @param {当前树} ast 
@@ -21,7 +21,12 @@ class pluginParams {
  */
 module.exports = function (asts, pluginObj) {
     const select = new selector(pluginObj);
-    traverser(select);
+    for (const key in rebaConfig) {
+        if (rebaConfig.hasOwnProperty(key)) {
+            const value = rebaConfig[key];
+            select.push(value);
+        }
+    }
     /**
      * 用于遍历语法树 asts
      * { 向下传递数据对象 } obj

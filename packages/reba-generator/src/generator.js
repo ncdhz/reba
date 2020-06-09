@@ -1,4 +1,4 @@
-const traverser = require("reba-traverser").traverser;
+const traverser = require("./traverser");
 const selector = require("reba-traverser").selector;
 const generatorTools = require("./generator-tools");
 const codeInformation = require("./code-information");

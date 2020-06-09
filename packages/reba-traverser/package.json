@@ -1,6 +1,6 @@
 {
   "name": "reba-traverser",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Selector handling",
   "main": "src/index.js",
   "scripts": {
@@ -8,9 +8,7 @@
   },
   "author": "ncdhz",
   "license": "ISC",
-  "dependencies": {
-    "reba-parser-tools": "^1.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {},
   "repository": {
     "type": "git",
