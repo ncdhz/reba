@@ -479,4 +479,4 @@ module.exports = class {
         
         this.codeInformation.setToken(start, this.codeInformation.codeStartLength - 1, stringType, stringOne);
     }
-};
+}

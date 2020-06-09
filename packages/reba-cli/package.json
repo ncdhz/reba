@@ -1,6 +1,6 @@
 {
   "name": "reba-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,6 +12,6 @@
   },
   "dependencies": {
     "commander": "^5.1.0",
-    "reba-core": "file:../reba-core"
+    "reba-core": "^1.0.1"
   }
 }

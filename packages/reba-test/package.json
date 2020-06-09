@@ -5,11 +5,11 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "reba 'let { first: f, last: l } = singer;' -nf -ngf"
+    "build": "reba ./src"
   },
   "author": "ncdhz",
   "license": "ISC",
   "dependencies": {
-    "reba-cli": "file:../reba-cli"
+    "reba-cli": "^1.0.0"
   }
 }

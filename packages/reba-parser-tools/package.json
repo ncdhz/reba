@@ -1,11 +1,19 @@
 {
   "name": "reba-parser-tools",
   "version": "1.0.0",
-  "description": "",
+  "description": "parser tools",
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "ncdhz",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ncdhz/reba/tree/master/packages/reba-parser-tools"
+  },
+  "keywords": [
+    "parser",
+    "ASTObject"
+  ]
 }

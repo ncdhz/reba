@@ -5,7 +5,8 @@ const version = require("reba-core").version;
 
 const config = {
     lexical: {},
-    generator: {}
+    generator: {},
+    test:{}
 };
 
 program.arguments('<source>').action(function (cmd) {
@@ -22,7 +23,10 @@ program.
     option("-d, --generate-folder <generateFolder>", "Output folder").
     option("-dfn, --default-file-name <defaultFileName>", "Source code default filename").
     option("-ngf, --no-generate-file", "Not generate files").
-    option("-gf, --generate-file", "Generate files");
+    option("-gf, --generate-file", "Generate files").
+    option("-tl, --test-lexical", "Output lexical").
+    option("-tp, --test-parser", "Output parser").
+    option("-te, --test-env", "Output preset env");
 
 module.exports = function parseArgv(args) {
     program.parse(args);
@@ -44,6 +48,15 @@ module.exports = function parseArgv(args) {
     }
     if (program.generateFile === false) { 
         config.generator["generateFile"] = program.generateFile;
+    }
+    if (program.testLexical) {
+        config.test["lexical"] = program.testLexical;
+    }
+    if (program.testParser) {
+        config.test["parser"] = program.testParser;
+    }
+    if (program.testEnv) {
+        config.test["preset"] = program.testEnv;
     }
     return config;
 }

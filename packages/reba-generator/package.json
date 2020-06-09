@@ -8,14 +8,21 @@
   "author": "ncdhz",
   "license": "ISC",
   "dependencies": {
-    "reba-parser": "file:../reba-parser",
-    "reba-parser-tools": "file:../reba-parser-tools",
-    "reba-tools": "file:../reba-tools",
-    "reba-traverser": "file:../reba-traverser"
+    "reba-parser": "^1.0.0",
+    "reba-parser-tools": "^1.0.0",
+    "reba-tools": "^1.0.0",
+    "reba-traverser": "^1.0.0"
   },
   "directories": {
     "lib": "lib"
   },
   "devDependencies": {},
-  "description": ""
+  "description": "Generate code",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ncdhz/reba/tree/master/packages/reba-generator"
+  },
+  "keywords": [
+    "JavaScriptGenerator"
+  ]
 }

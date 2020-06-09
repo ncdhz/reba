@@ -7,7 +7,6 @@ function getAST(tokenFile, sourceType) {
     const astBody = astI.ast.body;
     const ana = new analysis(astI);
     const select = ana.getSelectorOne(ast,astBody);
-    
     while(astI.getNowToken()) {
         const data = select.run(astI.getNowTokenType(), [ast]);
         if (data) astBody.push(data);

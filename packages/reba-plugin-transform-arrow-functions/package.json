@@ -1,7 +1,6 @@
 {
   "name": "reba-plugin-transform-arrow-functions",
   "version": "1.0.0",
-  "description": "",
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,6 +8,12 @@
   "author": "ncdhz",
   "license": "ISC",
   "dependencies": {
-    "reba-parser-tools": "file:../reba-parser-tools"
-  }
+    "reba-parser-tools": "^1.0.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ncdhz/reba/tree/master/packages/reba-plugin-transform-arrow-functions"
+  },
+  "description": ""
 }

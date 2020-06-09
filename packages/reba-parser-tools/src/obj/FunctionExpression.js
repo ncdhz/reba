@@ -7,5 +7,6 @@ module.exports =class FunctionExpression {
         this.params = [];
         this.body = null;
         this.async = false;
+        this.parenthesized = false;
     }
 }

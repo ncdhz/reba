@@ -1,7 +1,6 @@
 {
   "name": "reba-core",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,11 +8,18 @@
   "author": "ncdhz",
   "license": "ISC",
   "dependencies": {
-    "reba-generator": "file:../reba-generator",
-    "reba-lexical": "file:../reba-lexical",
-    "reba-parser": "file:../reba-parser",
-    "reba-parser-tools": "file:../reba-parser-tools",
-    "reba-tools": "file:../reba-tools",
-    "reba-traverser": "file:../reba-traverser"
-  }
+    "reba-generator": "^1.0.0",
+    "reba-lexical": "^1.0.0",
+    "reba-parser": "^1.0.0",
+    "reba-preset-env": "^1.0.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ncdhz/reba/tree/master/packages/reba-core"
+  },
+  "keywords": [
+    "rebaCore"
+  ],
+  "description": ""
 }

@@ -87,8 +87,10 @@ module.exports = class {
     FunctionDeclaration(ast, parentNode) {
         this.Function(ast, parentNode);
     }
-
     Function(ast, parentNode) {
+        if (ast.parenthesized) {
+            this.code.add(brackets.parentheses.leftParentheses);
+        }
         if (!type.isType(parentNode.type, [
             astConfig.Property, astConfig.MethodDefinition
         ])) {
@@ -113,6 +115,10 @@ module.exports = class {
         });
         this.code.addExceptEnter(brackets.parentheses.rightParentheses).addSpace();
         this.selectRun(ast.body, ast);
+        if (ast.parenthesized) {
+            this.code.addExceptEnter('').addBehindEnter(brackets.parentheses.rightParentheses);
+            
+        }
     }
     /**
      * 用于处理 function

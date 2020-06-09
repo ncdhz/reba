@@ -1,10 +1,17 @@
 const ergodic = require("reba-traverser").ergodic;
-
-module.exports = function run( config ){
-    
-    if(typeof config === "object") {
-        Object.assign(presetEnv.plugin, config.plugin);
+const { dependencies } = require("../package.json");
+module.exports =  function run(ast,config){
+    const plugin = {};
+    for (const key in dependencies) {
+        let dependencie = require(key);
+        if (typeof dependencie === "object" && 
+            dependencie.hasOwnProperty("name") &&
+            dependencie.hasOwnProperty("value")) {
+            plugin[dependencie["name"]] = dependencie["value"];
+        }
     }
-    ergodic(ast, presetEnv.plugin);
-
+    if(typeof config === "object") {
+        Object.assign(plugin, config);
+    }
+    ergodic(ast, plugin);
 }

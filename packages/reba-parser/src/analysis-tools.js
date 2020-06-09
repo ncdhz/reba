@@ -588,8 +588,11 @@ module.exports = class {
             astConfig.SwitchCase,
             astConfig.WithStatement,
             astConfig.TryStatement
-        ])) {
+        ]) && !type.isType(this.astI.getFrontTokenType(), brackets.parentheses.leftParentheses)) {
             ast = new astObj.FunctionDeclaration();
+        }
+        if (type.isType(this.astI.getFrontTokenType(), brackets.parentheses.leftParentheses)) {
+            ast.parenthesized =true;
         }
         if (this.astI.isType(jsKey["function*"])) {
             ast.generator = true;

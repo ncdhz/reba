@@ -1,7 +1,7 @@
 {
   "name": "reba-tools",
   "version": "1.0.0",
-  "description": "",
+  "description": "This is a reba tools.",
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,6 +9,14 @@
   "author": "ncdhz",
   "license": "ISC",
   "dependencies": {
-    "reba-traverser": "file:../reba-traverser"
-  }
+    "reba-traverser": "^1.0.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ncdhz/reba/tree/master/packages/reba-tools"
+  },
+  "keywords": [
+    "rebaType"
+  ]
 }

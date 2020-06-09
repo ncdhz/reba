@@ -9,6 +9,15 @@
   "author": "ncdhz",
   "license": "ISC",
   "dependencies": {
-    "reba-traverser": "file:../reba-traverser"
-  }
+    "reba-plugin-transform-arrow-functions": "^1.0.0",
+    "reba-traverser": "^1.0.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ncdhz/reba/tree/master/packages/reba-preset-env"
+  },
+  "keywords": [
+    "presetEnv"
+  ]
 }

@@ -5,6 +5,7 @@ module.exports = class {
         this.operation = operation;
         this.data = {};
     }
+    
     pushOperation(operation){
         this.operation = operation;
         return this;
