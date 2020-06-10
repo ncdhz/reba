@@ -1,6 +1,6 @@
 {
   "name": "reba-parser",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "This is a javascript parser.",
   "main": "src/index.js",
   "scripts": {

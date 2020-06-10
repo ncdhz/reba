@@ -411,7 +411,7 @@ module.exports = class {
             ast.properties = this.objPropertyAna(ast);
             // 当父类为 function 对参数进行检查
             if (type.isType(parentNode.type, [astConfig.FunctionDeclaration,
-                astConfig.FunctionExpression, astConfig.TryStatement, astConfig.VariableDeclarator])) {
+                astConfig.FunctionExpression, astConfig.TryStatement])) {
                 this.objectPatternConstraint(ast.properties);
             }
         }
@@ -483,7 +483,6 @@ module.exports = class {
             // 如果当前元素为 : 向后平移
             if (this.astI.isType(operator.conditionalOperator.colon))
                 this.error.tokenAddOneAndUndefinedError();
-
             ast.value = selectValue.run(this.astI.getNowTokenType(), [ast]);
         } while (!this.astI.isType(brackets.braces.rightBraces));
         return properties;
@@ -1425,7 +1424,7 @@ module.exports = class {
         this.error.tokenAddOneAndUndefinedError();
         this.error.nowTokenTypeError(brackets.parentheses.leftParentheses);
         this.error.tokenAddOneAndUndefinedError();
-        ast.test = this.isSequenceAna(this.expressionAna(ast));
+        ast.discriminant = this.isSequenceAna(this.expressionAna(ast));
         this.astI.removeRightParentheses();
         this.error.nowTokenTypeError(brackets.braces.leftBraces);
         this.error.tokenAddOneAndUndefinedError();

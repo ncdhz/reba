@@ -14,5 +14,8 @@
     "class"
   ],
   "author": "ncdhz",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "reba-parser-tools": "^1.0.0"
+  }
 }

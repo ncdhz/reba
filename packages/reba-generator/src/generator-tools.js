@@ -108,6 +108,15 @@ module.exports = class {
                 this.code.addBehindSpace(jsKey.function);
             }
         }
+        if(type.isType(parentNode.type, astConfig.Property)) {
+            if (!parentNode.method) {
+                if (ast.generator) {
+                    this.code.addBehindSpace(jsKey["function*"]);
+                } else {
+                    this.code.addBehindSpace(jsKey.function);
+                }
+            }
+        }
         this.selectRun(ast.id, ast);
         this.code.add(brackets.parentheses.leftParentheses);
         this.selectForRun(ast.params, ast, (index) => {
@@ -227,9 +236,13 @@ module.exports = class {
     ObjectPattern(ast, parentNode) {
 
         this.code.addBehindSpace(brackets.braces.leftBraces);
-        this.selectForRun(ast.properties, ast, (index) => {
-            this.code.addCommaExceptEndNode(index, ast.properties.length);
-        });
+        if (ast.properties.length > 0 ){
+            this.code.addEnter();
+            this.code.addSpaceNum();
+            this.selectForRun(ast.properties, ast, (index) => {
+                this.code.addCommaExceptEndNode(index, ast.properties.length);
+            });
+        }
         this.code.add(brackets.braces.rightBraces);
     }
     // 对象里面的属性
@@ -555,7 +568,7 @@ module.exports = class {
         } else {
             this.code.addBehindEnter(brackets.braces.leftBraces);
             this.code.addSpaceNum();
-            selectForRun(ast.cases, ast);
+            this.selectForRun(ast.cases, ast);
             this.code.reduceSpaceNum();
             this.blockSpaceAlignment(parentNode);
             this.code.addBehindEnter(brackets.braces.rightBraces);

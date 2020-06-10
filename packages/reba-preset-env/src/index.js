@@ -1,4 +1,4 @@
-const ergodic = require("reba-traverser").ergodic;
+const ergodic = require("./ergodic");
 const { dependencies } = require("../package.json");
 module.exports = function run(ast, config) {
     const plugin = {};

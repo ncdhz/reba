@@ -32,7 +32,7 @@ module.exports = function (asts, pluginObj) {
      * { 向下传递数据对象 } obj
      */
     const astErgodic = (obj) => {
-        if (typeof obj.ast !== "object" ) {
+        if (typeof obj.ast !== "object" || !obj.ast) {
             return;
         }
         if(obj.parentNode) {
