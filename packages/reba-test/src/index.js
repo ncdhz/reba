@@ -1,3 +1,1 @@
-(a, b) => {
-    return a + b;
-}
+const rebaGenerator = require("reba-generator")
